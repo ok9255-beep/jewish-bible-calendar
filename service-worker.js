@@ -1,12 +1,9 @@
-const CACHE_VERSION = 'public-v1-20260627';
+const CACHE_VERSION = 'public-v3-single-file-safe-20260627';
 const APP_CACHE = `jewish-bible-calendar-${CACHE_VERSION}`;
 
 const APP_SHELL = [
   './',
   './index.html',
-  './src/styles.css?v=public-v1',
-  './src/app.js?v=public-v1',
-  './data/nt-fulfillment-plan.sample.json',
   './manifest.webmanifest',
   './assets/icon.svg',
   './assets/icon-192.png',
@@ -34,7 +31,6 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // Hebcal API: prefer live network, fall back to cached response.
   if (url.hostname.includes('hebcal.com')) {
     event.respondWith(
       fetch(request)
@@ -48,7 +44,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // App shell: cache first, then network.
   event.respondWith(
     caches.match(request).then((cached) => cached || fetch(request).then((response) => {
       const copy = response.clone();

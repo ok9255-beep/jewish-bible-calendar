@@ -4,13 +4,913 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0b2a52" />
-    <meta name="description" content="유대력 절기와 날짜별 성경 읽기 범위를 함께 보여주는 모바일 PWA 성경 달력 앱입니다." />
+    <meta name="description" content="유대력 절기와 날짜별 성경 읽기 본문을 함께 보여주는 모바일 성경 달력 앱입니다." />
+    <style>
+:root {
+  --bg: #f5efe3;
+  --bg-2: #efe6d4;
+  --paper: rgba(255, 252, 245, 0.94);
+  --paper-strong: #fffdf8;
+  --ink: #17233b;
+  --muted: #6c7787;
+  --navy: #0b2a52;
+  --navy-2: #143b6e;
+  --olive: #71874e;
+  --olive-deep: #53663a;
+  --gold: #c2943b;
+  --gold-soft: #f6e7bf;
+  --blue: #2f71c8;
+  --line: rgba(23, 35, 59, 0.09);
+  --shadow: 0 18px 42px rgba(15, 32, 61, 0.12);
+  --shadow-soft: 0 10px 24px rgba(15, 32, 61, 0.08);
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 18px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); }
+body {
+  background:
+    radial-gradient(circle at top left, rgba(194, 148, 59, 0.16), transparent 28rem),
+    radial-gradient(circle at bottom right, rgba(113, 135, 78, 0.14), transparent 26rem),
+    linear-gradient(180deg, #f7f2e9 0%, #efe5d4 100%);
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,0.14), rgba(255,255,255,0.14));
+  mix-blend-mode: soft-light;
+}
+button, input { font: inherit; }
+a { color: inherit; }
+[hidden] { display: none !important; }
+
+.app-shell {
+  width: min(100%, 480px);
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 14px) 14px calc(102px + env(safe-area-inset-bottom));
+}
+
+.app-header {
+  padding: 18px 16px 16px;
+  border-radius: 34px;
+  background: linear-gradient(180deg, var(--navy) 0%, #0f315f 100%);
+  color: #fff;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.app-header::before,
+.app-header::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+}
+.app-header::before { width: 160px; height: 160px; right: -40px; top: -70px; }
+.app-header::after { width: 120px; height: 120px; left: -40px; bottom: -50px; background: rgba(194,148,59,0.18); }
+.top-bar, .summary-grid, .menu-bar, .bottom-tabs, .panel, .status-card { position: relative; z-index: 1; }
+.top-bar {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+.icon-button,
+.language-button,
+.outline-button,
+.mini-button,
+.segment-button {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+}
+.icon-button {
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  color: #fff;
+  background: rgba(255,255,255,0.09);
+  font-size: 1rem;
+}
+.title-block { text-align: center; }
+.eyebrow {
+  margin: 0 0 4px;
+  color: rgba(255,255,255,0.76);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+h1, h2, h3, p { margin-top: 0; }
+h1 {
+  margin-bottom: 0;
+  font-size: 1.65rem;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+}
+.language-button {
+  min-width: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+.summary-card {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 13px 12px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+}
+.summary-icon {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.12);
+  font-size: 1rem;
+}
+.summary-label {
+  margin: 0 0 4px;
+  color: rgba(255,255,255,0.74);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.summary-value {
+  margin: 0;
+  color: #fff;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  font-weight: 700;
+}
+.summary-value--hebrew { font-size: 0.82rem; }
+.region-label { margin: 4px 0 0; color: rgba(255,255,255,0.72); font-size: 0.72rem; }
+
+.menu-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 12px 2px 4px;
+  scrollbar-width: none;
+}
+.menu-bar::-webkit-scrollbar { display: none; }
+.menu-link {
+  flex: 0 0 auto;
+  padding: 10px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(23,35,59,0.08);
+  background: rgba(255,255,255,0.72);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+
+.status-card {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 16px;
+  margin-top: 10px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.68);
+  border: 1px solid var(--line);
+}
+.status-card p { margin: 0; font-size: 0.88rem; color: var(--muted); line-height: 1.45; }
+.status-dot {
+  width: 9px; height: 9px; border-radius: 999px;
+  background: var(--olive);
+  box-shadow: 0 0 0 6px rgba(113,135,78,0.16);
+}
+
+.panel {
+  margin-top: 14px;
+  padding: 18px;
+  border-radius: var(--radius-xl);
+  background: var(--paper);
+  border: 1px solid rgba(255,255,255,0.55);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
+}
+.hero-panel { padding-bottom: 16px; }
+.section-heading-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.section-heading-row--stack { flex-direction: column; align-items: stretch; }
+.section-kicker {
+  margin: 0 0 4px;
+  color: var(--olive);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.section-title {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.outline-button {
+  padding: 9px 13px;
+  border-radius: 12px;
+  background: rgba(194,148,59,0.1);
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.portion-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  min-height: 180px;
+  margin-bottom: 14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.36)),
+    linear-gradient(180deg, rgba(15,45,83,0.12), rgba(15,45,83,0.02)),
+    linear-gradient(140deg, #efe1c8 0%, #e3cfab 52%, #d8c098 100%);
+}
+.portion-hero::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 100px;
+  background:
+    radial-gradient(110px 50px at 16% 100%, rgba(176,150,112,0.55), transparent 60%),
+    radial-gradient(160px 64px at 42% 100%, rgba(183,158,118,0.42), transparent 60%),
+    radial-gradient(170px 54px at 72% 100%, rgba(160,138,104,0.48), transparent 58%),
+    radial-gradient(120px 45px at 95% 100%, rgba(171,145,109,0.42), transparent 58%);
+}
+.portion-overlay {
+  position: relative;
+  z-index: 1;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 22px 20px;
+}
+.week-portion { margin: 0; }
+.week-portion .portion-main,
+.week-portion .portion-sub { display: block; }
+.week-portion .portion-main {
+  color: var(--ink);
+  font-size: 1.26rem;
+  line-height: 1.35;
+  font-weight: 800;
+}
+.week-portion .portion-sub {
+  margin-top: 9px;
+  color: rgba(23,35,59,0.72);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.week-portion strong { color: var(--gold); }
+.reading-stack { display: grid; gap: 10px; }
+.reading-item {
+  display: grid;
+  grid-template-columns: 44px 1fr 16px;
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--paper-strong);
+  border: 1px solid var(--line);
+}
+.reading-item--torah { border-left: 5px solid var(--olive); }
+.reading-item--nt { border-left: 5px solid var(--blue); }
+.reading-item--prophets { border-left: 5px solid var(--gold); }
+.reading-icon {
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  font-size: 1rem;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+}
+.reading-item--torah .reading-icon { background: linear-gradient(180deg, #8ba05f, var(--olive)); }
+.reading-item--nt .reading-icon { background: linear-gradient(180deg, #5aa0f3, var(--blue)); }
+.reading-item--prophets .reading-icon { background: linear-gradient(180deg, #e0b462, var(--gold)); }
+.label {
+  margin: 2px 0 6px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+.reference {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.08rem;
+  line-height: 1.38;
+  font-weight: 800;
+}
+.note {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+.chevron {
+  align-self: center;
+  color: var(--muted);
+  font-size: 1.3rem;
+}
+
+.calendar-panel { overflow: hidden; }
+.week-nav {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.mini-button {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(194,148,59,0.10);
+  color: var(--gold);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+.mini-button.primary {
+  background: rgba(113,135,78,0.18);
+  color: var(--olive-deep);
+}
+.view-switch-wrap { margin: 4px 0 8px; }
+.segmented-control {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #f0eadf;
+}
+.segment-button {
+  padding: 10px 8px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+.segment-button.active {
+  background: linear-gradient(180deg, #8ca164, var(--olive));
+  color: #fff;
+  box-shadow: 0 7px 18px rgba(113,135,78,0.22);
+}
+.term-explain {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+.holiday-summary-box {
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(194,148,59,0.08), rgba(194,148,59,0.04));
+  border: 1px solid rgba(194,148,59,0.16);
+}
+.weekly-holiday-title {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.weekly-holiday-strip { display: grid; gap: 8px; }
+.weekly-holiday-pill {
+  display: grid;
+  grid-template-columns: 4.8rem 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 9px 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.72);
+}
+.weekly-holiday-pill span { color: var(--muted); font-size: 0.78rem; font-weight: 800; }
+.weekly-holiday-pill strong { color: var(--ink); font-size: 0.84rem; line-height: 1.35; }
+.weekly-holiday-empty { margin: 0; color: var(--muted); font-size: 0.82rem; line-height: 1.45; }
+.reading-calendar { margin-top: 2px; }
+.weekly-calendar-list { display: grid; gap: 10px; }
+.weekly-day-card {
+  padding: 14px;
+  border-radius: 20px;
+  background: #fffdf8;
+  border: 1px solid var(--line);
+}
+.weekly-day-card.is-today {
+  border-color: rgba(194,148,59,0.45);
+  background: linear-gradient(180deg, rgba(255,248,232,0.98), rgba(255,252,245,0.98));
+  box-shadow: inset 0 0 0 1px rgba(194,148,59,0.18);
+}
+.weekly-day-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.weekly-day-name {
+  margin: 0 0 2px;
+  color: var(--ink);
+  font-size: 1.04rem;
+  font-weight: 900;
+}
+.weekly-day-date { margin: 0; color: var(--muted); font-size: 0.84rem; font-weight: 700; }
+.today-chip {
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(194,148,59,0.16);
+  color: var(--gold);
+  font-size: 0.65rem;
+  font-weight: 900;
+}
+.today-chip.big { padding: 5px 9px; font-size: 0.72rem; }
+.holiday-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+.holiday-tag {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(194,148,59,0.14);
+  color: var(--gold);
+  font-size: 0.73rem;
+  font-weight: 800;
+}
+.weekly-readings { display: grid; gap: 8px; }
+.weekly-readings p {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 4.8rem 1fr;
+  gap: 8px;
+  align-items: baseline;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.42;
+}
+.weekly-readings strong { color: var(--olive); font-size: 0.76rem; font-weight: 900; }
+.weekly-readings span { color: var(--ink); font-weight: 700; }
+.muted-line { color: var(--muted); }
+.monthly-calendar-scroll { overflow-x: auto; padding-bottom: 4px; }
+.monthly-view-title { margin: 0 0 10px; color: var(--ink); font-size: 1rem; font-weight: 900; }
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(78px, 1fr));
+  gap: 6px;
+  min-width: 620px;
+  margin-bottom: 8px;
+}
+.calendar-weekdays span {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(78px, 1fr));
+  gap: 6px;
+  min-width: 620px;
+}
+.calendar-cell {
+  min-height: 128px;
+  padding: 8px;
+  border-radius: 16px;
+  background: #fffdf8;
+  border: 1px solid var(--line);
+}
+.calendar-cell.is-today {
+  border-color: rgba(194,148,59,0.55);
+  box-shadow: inset 0 0 0 1px rgba(194,148,59,0.18);
+}
+.calendar-cell.muted-month { opacity: 0.42; }
+.calendar-date-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 5px;
+}
+.calendar-date-number { color: var(--ink); font-size: 0.84rem; font-weight: 900; }
+.calendar-holiday {
+  margin: 0 0 6px;
+  color: var(--gold);
+  font-size: 0.64rem;
+  line-height: 1.3;
+  font-weight: 800;
+}
+.calendar-readings p {
+  margin: 3px 0;
+  color: var(--muted);
+  font-size: 0.62rem;
+  line-height: 1.3;
+}
+.calendar-readings strong {
+  display: block;
+  margin-bottom: 1px;
+  color: var(--ink);
+  font-size: 0.59rem;
+}
+
+.split-panel {
+  display: grid;
+  gap: 16px;
+}
+.holiday-list, .term-list { list-style: none; padding: 0; margin: 0; }
+.holiday-list li, .event-row {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+.holiday-list li:first-child, .event-row:first-child { border-top: 0; }
+.event-date { margin-bottom: 4px; color: var(--muted); font-size: 0.84rem; }
+.event-title { margin: 0; color: var(--ink); font-weight: 800; line-height: 1.4; }
+.event-extra { margin: 4px 0 0; color: var(--muted); font-size: 0.84rem; line-height: 1.45; }
+
+.small-eyebrow {
+  margin: 0 0 6px;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.info-card h2, .guide-card h2 { margin-bottom: 10px; font-size: 1.12rem; }
+.info-text, .simple-steps, .copyright-list p, .term-list dd {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.62;
+}
+.simple-steps { margin: 0; padding-left: 1.2rem; }
+.simple-steps li { margin: 7px 0; }
+.compact-terms { padding-top: 16px; }
+.term-list div { padding: 11px 0; border-top: 1px solid var(--line); }
+.term-list div:first-child { border-top: 0; padding-top: 0; }
+.term-list dt {
+  margin-bottom: 4px;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+.term-list dd { margin: 0; }
+.copyright-list p { margin: 0; padding: 10px 0; border-top: 1px solid var(--line); }
+.copyright-list p:first-child { border-top: 0; padding-top: 0; }
+
+.app-footer {
+  padding: 18px 6px 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.74rem;
+  line-height: 1.58;
+}
+.app-footer p { margin: 0; }
+.bottom-tabs {
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(calc(100% - 20px), 460px);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  padding: 8px;
+  border-radius: 22px;
+  background: rgba(255,253,248,0.92);
+  border: 1px solid rgba(255,255,255,0.8);
+  box-shadow: 0 14px 34px rgba(15,32,61,0.16);
+  backdrop-filter: blur(16px);
+}
+.bottom-tab {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 7px 4px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.bottom-tab span { font-size: 1rem; }
+.bottom-tab.is-active { color: var(--olive-deep); background: rgba(113,135,78,0.12); }
+#home, #calendar-section, #about, #usage, #terms, #copyright { scroll-margin-top: 72px; }
+
+@media (min-width: 768px) {
+  .app-shell { width: min(100%, 760px); }
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .split-panel { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 430px) {
+  .app-shell { padding-left: 12px; padding-right: 12px; }
+  .app-header { padding: 16px 14px 15px; }
+  h1 { font-size: 1.5rem; }
+  .summary-grid { grid-template-columns: 1fr; }
+  .summary-value { font-size: 0.86rem; }
+  .summary-value--hebrew { font-size: 0.78rem; }
+  .panel { padding: 16px; border-radius: 24px; }
+  .section-heading-row { flex-direction: column; }
+  .outline-button { align-self: flex-start; }
+  .weekly-readings p { grid-template-columns: 4.4rem 1fr; font-size: 0.86rem; }
+  .calendar-cell { min-height: 120px; }
+  .bottom-tab small { font-size: 0.63rem; }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1728;
+    --paper: rgba(19, 29, 48, 0.92);
+    --paper-strong: rgba(15, 24, 41, 0.96);
+    --ink: #f5f7fb;
+    --muted: #b5c0d1;
+    --line: rgba(255,255,255,0.08);
+  }
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(194, 148, 59, 0.18), transparent 28rem),
+      radial-gradient(circle at bottom right, rgba(113, 135, 78, 0.14), transparent 26rem),
+      #0e1626;
+  }
+  .menu-link, .status-card, .panel, .bottom-tabs { border-color: rgba(255,255,255,0.08); }
+  .menu-link, .status-card, .panel, .bottom-tabs, .reading-item, .weekly-day-card, .calendar-cell, .weekly-holiday-pill {
+    background: rgba(19,29,48,0.92);
+  }
+  .segmented-control { background: rgba(255,255,255,0.06); }
+  .holiday-summary-box { background: rgba(194,148,59,0.08); }
+}
+
+    
+/* Clickable v3 interaction layer */
+.icon-button,
+.clickable-reading,
+.menu-link,
+.bottom-tab,
+.drawer-close,
+.drawer-menu a {
+  -webkit-tap-highlight-color: transparent;
+}
+.clickable-reading {
+  cursor: pointer;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.clickable-reading:active {
+  transform: scale(.985);
+}
+.clickable-reading:hover {
+  box-shadow: 0 14px 30px rgba(15,32,61,.11);
+}
+.drawer-overlay,
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(11, 42, 82, .42);
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.drawer-overlay.is-open,
+.detail-overlay.is-open {
+  opacity: 1;
+}
+.side-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 80;
+  width: min(82vw, 340px);
+  height: 100dvh;
+  padding: calc(env(safe-area-inset-top) + 22px) 18px 22px;
+  background:
+    linear-gradient(180deg, rgba(255,253,248,.98), rgba(247,240,226,.98));
+  color: var(--ink);
+  box-shadow: 24px 0 60px rgba(15,32,61,.22);
+  transform: translateX(-104%);
+  transition: transform .24s ease;
+  border-radius: 0 28px 28px 0;
+}
+.side-drawer.is-open {
+  transform: translateX(0);
+}
+.drawer-head,
+.detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.drawer-head h2,
+.detail-head h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+.drawer-close {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(23,35,59,.07);
+  color: var(--ink);
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+.drawer-menu {
+  display: grid;
+  gap: 8px;
+}
+.drawer-menu a {
+  display: block;
+  padding: 13px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.76);
+  border: 1px solid var(--line);
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgba(15,32,61,.06);
+}
+.drawer-note {
+  margin: 18px 2px 0;
+  color: var(--muted);
+  font-size: .86rem;
+  line-height: 1.55;
+}
+.detail-sheet {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 90;
+  width: min(100%, 480px);
+  padding: 10px 18px calc(22px + env(safe-area-inset-bottom));
+  border-radius: 28px 28px 0 0;
+  background: rgba(255,253,248,.98);
+  color: var(--ink);
+  box-shadow: 0 -24px 60px rgba(15,32,61,.22);
+  transform: translate(-50%, 110%);
+  transition: transform .24s ease;
+}
+.detail-sheet.is-open {
+  transform: translate(-50%, 0);
+}
+.detail-handle {
+  width: 44px;
+  height: 5px;
+  margin: 0 auto 14px;
+  border-radius: 999px;
+  background: rgba(23,35,59,.16);
+}
+.detail-reference {
+  margin: 0 0 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(113,135,78,.12);
+  color: var(--ink);
+  font-size: 1.15rem;
+  line-height: 1.45;
+  font-weight: 900;
+}
+.detail-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: .92rem;
+  line-height: 1.62;
+}
+body.drawer-lock {
+  overflow: hidden;
+}
+@media (prefers-color-scheme: dark) {
+  .side-drawer,
+  .detail-sheet {
+    background: rgba(19,29,48,.98);
+  }
+  .drawer-close,
+  .drawer-menu a {
+    background: rgba(255,255,255,.07);
+  }
+}
+
+    
+/* Clickable v4 active bottom tab update */
+.bottom-tab {
+  transition: background .16s ease, color .16s ease, transform .16s ease;
+}
+.bottom-tab:active {
+  transform: scale(.96);
+}
+.bottom-tab.is-active {
+  color: var(--olive-deep);
+  background: rgba(113,135,78,0.14);
+  font-weight: 900;
+}
+.menu-link.is-active {
+  color: #fff;
+  background: linear-gradient(180deg, #8ca164, var(--olive));
+  border-color: transparent;
+}
+
+    
+/* Clickable v5 color and readability update */
+.icon-button {
+  background: rgba(255,255,255,0.14);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+  font-size: 1.28rem;
+  font-weight: 900;
+}
+.reading-icon {
+  font-size: 1.28rem;
+  font-weight: 900;
+  text-shadow: 0 1px 1px rgba(0,0,0,.14);
+}
+.reading-item {
+  border-color: rgba(23,35,59,.12);
+}
+.bottom-tab {
+  color: #596477;
+}
+.bottom-tab span {
+  display: block;
+  color: var(--navy);
+  font-size: 1.12rem;
+  line-height: 1;
+  opacity: .96;
+}
+.bottom-tab small {
+  font-size: 0.62rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.bottom-tab.is-active {
+  color: var(--olive-deep);
+  background: rgba(113,135,78,0.16);
+}
+.bottom-tab.is-active span {
+  color: var(--olive-deep);
+}
+.info-text, .simple-steps, .copyright-list p, .term-list dd {
+  font-size: 0.84rem;
+  line-height: 1.56;
+}
+.term-list dt {
+  font-size: 0.84rem;
+}
+.app-footer {
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+.drawer-note {
+  font-size: .8rem;
+  line-height: 1.5;
+}
+@media (max-width: 430px) {
+  .reading-icon {
+    font-size: 1.22rem;
+  }
+  .bottom-tab small {
+    font-size: 0.6rem;
+  }
+  .info-text, .simple-steps, .copyright-list p, .term-list dd {
+    font-size: 0.8rem;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  .bottom-tab span {
+    color: var(--ink);
+  }
+  .bottom-tab.is-active span {
+    color: var(--ink);
+  }
+}
+
+    </style>
     <title>유대력 성경 달력</title>
-  
-    <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="./assets/icon-192.png" />
-    <link rel="stylesheet" href="./src/styles.css?v=public-v1" />
+      <link rel="manifest" href="./manifest.webmanifest" />
+      <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
+      <link rel="apple-touch-icon" href="./assets/icon-192.png" />
   </head>
   <body>
     <noscript>이 앱을 사용하려면 JavaScript가 필요합니다.</noscript>
@@ -263,7 +1163,1324 @@
         <a href="#copyright" class="bottom-tab"><span>⚙</span><small data-i18n="menuCopyright">저작권</small></a>
       </nav>
     </div>
+    <script>window.__NT_PLAN__ = [
+  {
+    "parashaKey": "Bereshit",
+    "ntRef": "John 1:1-18; Colossians 1:15-23",
+    "noteKo": "창조의 시작을 말씀 안에서 다시 듣고, 만물이 그리스도 안에서 붙들려 있음을 묵상합니다.",
+    "noteEn": "The beginning of creation is heard again through the Word, and all things are held together in Christ.",
+    "dailyNt": [
+      "John 1:1-18",
+      "Colossians 1:15-23",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "parashaKey": "Noach",
+    "ntRef": "Matthew 24:36-44; 1 Peter 3:18-22",
+    "noteKo": "홍수의 심판과 방주의 구원을 그리스도 안에서 다시 읽습니다.",
+    "noteEn": "The judgment of the flood and the salvation of the ark are reread in Christ.",
+    "dailyNt": [
+      "Matthew 24:36-44",
+      "1 Peter 3:18-22",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "parashaKey": "Lech-Lecha",
+    "ntRef": "Romans 4:1-25; Galatians 3:1-18",
+    "noteKo": "아브라함의 믿음과 언약이 복음 안에서 어떻게 열리는지 걷습니다.",
+    "noteEn": "Abraham's faith and covenant open into the gospel.",
+    "dailyNt": [
+      "Romans 4:1-25",
+      "Galatians 3:1-18",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "parashaKey": "Vayera",
+    "ntRef": "Hebrews 11:8-19; Luke 1:26-38",
+    "noteKo": "약속의 아들과 믿음의 시험을 신약의 빛으로 바라봅니다.",
+    "noteEn": "The promised son and the testing of faith are seen in New Testament light.",
+    "dailyNt": [
+      "Hebrews 11:8-19",
+      "Luke 1:26-38",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "parashaKey": "Chayei Sara",
+    "ntRef": "Matthew 1:1-17; Revelation 19:6-9",
+    "noteKo": "언약의 가문과 신부의 길을 메시아의 계보와 어린양의 혼인잔치로 이어 봅니다.",
+    "noteEn": "The covenant household and the bride's journey continue toward Messiah's genealogy and the marriage supper of the Lamb.",
+    "dailyNt": [
+      "Matthew 1:1-17",
+      "Revelation 19:6-9",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "parashaKey": "Chukat",
+    "ntRef": "John 3:14-21; 1 Corinthians 10:1-13",
+    "noteKo": "광야에서 높이 들린 놋뱀은 십자가의 그림자처럼 복음의 문을 엽니다.",
+    "noteEn": "The bronze serpent lifted in the wilderness opens a gospel doorway toward the cross.",
+    "dailyNt": [
+      "John 3:14-15",
+      "John 3:16-18",
+      "John 3:19-21",
+      "1 Corinthians 10:1-4",
+      "1 Corinthians 10:5-8",
+      "1 Corinthians 10:9-11",
+      "1 Corinthians 10:12-13"
+    ]
+  },
+  {
+    "parashaKey": "Balak",
+    "ntRef": "2 Peter 2:15-16; Revelation 2:12-17",
+    "noteKo": "발람의 길과 하나님의 주권을 교회에 주시는 경고로 읽습니다.",
+    "noteEn": "Balaam's path and God's sovereignty become a warning to the churches.",
+    "dailyNt": [
+      "2 Peter 2:15-16",
+      "Revelation 2:12-13",
+      "Revelation 2:14-17",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "parashaKey": "Chukat-Balak",
+    "ntRef": "John 3:14-21; 2 Peter 2:15-16; Revelation 2:12-17",
+    "noteKo": "광야의 불순종, 놋뱀, 발람의 길을 십자가와 교회의 경고 속에서 함께 읽습니다.",
+    "noteEn": "Wilderness rebellion, the bronze serpent, and Balaam's path are read through the cross and the warnings to the churches.",
+    "dailyNt": [
+      "John 3:14-15",
+      "John 3:16-18",
+      "John 3:19-21",
+      "2 Peter 2:15-16",
+      "Revelation 2:12-13",
+      "Revelation 2:14-16",
+      "Revelation 2:17"
+    ]
+  }
+];</script>
+    <script type="module">
+const state = {
+  language: localStorage.getItem('language') || 'ko',
+  israelMode: localStorage.getItem('israelMode') === 'true',
+  today: new Date(),
+  viewDate: new Date(),
+  viewMode: localStorage.getItem('viewMode') || 'week',
+  ntPlan: [],
+};
 
-      <script type="module" src="./src/app.js?v=public-v1"></script>
+const i18n = {
+  ko: {
+    eyebrow: 'Jewish Bible Calendar',
+    appTitle: '유대력 성경 달력',
+    loading: '절기와 성경 읽기 정보를 불러오는 중입니다...',
+    loaded: '',
+    offline: '네트워크가 없어 저장된 기본 화면을 보여드립니다.',
+    todayReading: '오늘의 본문',
+    monthlyReadingTitle: '말씀 달력',
+    monthlyReadingHelp: '모바일 화면에서 잘 보이도록 한 주씩 보여줍니다. 각 날짜에 절기와 본문을 함께 표시합니다.',
+    viewModeLabel: '보기 방식',
+    weekView: '주간 보기',
+    calendarView: '달력으로 보기',
+    weeklyReadingHelp: '모바일 화면에서는 주간 보기를 기본으로 사용합니다. 달력으로 보기를 누르면 절기와 본문을 한 달 달력에서 함께 볼 수 있습니다.',
+    calendarReadingHelp: '한 달 달력 위에 유대 절기와 날짜별 본문을 함께 표시합니다. 화면이 좁으면 좌우로 움직여 볼 수 있습니다.',
+    dailyTorah: '모세오경',
+    dailyHaftarah: '선지서',
+    dailyNt: '신약 연결',
+    noDailyReading: '배정된 본문이 아직 없습니다.',
+    todayBadge: '오늘',
+    refresh: '새로고침',
+    torah: '모세오경 읽기',
+    torahHelp: '',
+    haftarah: '토요일 선지서 읽기',
+    haftarahHelp: '',
+    sabbathReadingTitle: '토요일 선지서 읽기',
+    ntFulfillment: '신약 연결 읽기',
+    ntHelp: '',
+    termGuideTitle: '용어 설명',
+    guideTorahTitle: '모세오경 읽기',
+    guideTorahBody: '창세기부터 신명기까지의 말씀을 날짜별로 나누어 읽는 부분입니다. 전통 용어로는 토라라고 부릅니다.',
+    guideHaftarahTitle: '토요일 선지서 읽기',
+    guideHaftarahBody: '유대 전통에서 토요일에 함께 읽는 선지서/역사서 본문입니다. 전통 용어로는 하프타라라고 부릅니다.',
+    guideParashaTitle: '이번 주 읽기 구간',
+    guideParashaBody: '한 주 동안 나누어 읽는 모세오경 묶음입니다. 전통 용어로는 파라샤라고 부릅니다.',
+    guideRoshTitle: '새 달의 첫날',
+    guideRoshBody: '유대력에서 새 달이 시작되는 날입니다. 전통 용어로는 월삭 또는 로쉬 호데쉬라고 부릅니다.',
+    holidays: '오늘의 절기와 기념일',
+    noHoliday: '오늘 표시할 절기나 기념일이 없습니다.',
+    monthPreview: '이번 달 유대력 미리보기',
+    diaspora: '',
+    israel: '',
+    notMapped: '이 날짜의 신약 연결 읽기는 아직 배정되지 않았습니다.',
+    defaultNote: '1단계에서는 모든 날짜에 신약 본문이 보이도록 임시 날짜별 배정표를 사용합니다. 최종 단계에서는 모세오경 흐름과 더 정교하게 연결합니다.',
+    footerRights: '유대력/절기 데이터: Hebcal API, CC BY 4.0. 영어 성경 본문 예정: King James Version(KJV). 한국어 성경 본문은 1단계에서 범위만 표시합니다.',
+    prevWeek: '이전 주',
+    thisWeek: '이번 주',
+    nextWeek: '다음 주',
+    weeklyHolidaysTitle: '이번 주 유대 절기',
+    monthlyHolidaysTitle: '이번 달 유대 절기',
+    noWeeklyHoliday: '이번 주에 표시할 절기나 기념일이 없습니다.',
+    noMonthlyHoliday: '이번 달에 표시할 절기나 기념일이 없습니다.',
+    prevMonth: '이전 달',
+    thisMonth: '이번 달',
+    nextMonth: '다음 달',
+    parashaPrefix: '이번 주 읽기 구간',
+    hebrewYearPrefix: '유대력',
+    menuToday: '오늘',
+    menuAbout: '앱 설명',
+    menuUsage: '사용 방법',
+    menuTerms: '용어',
+    menuCopyright: '저작권',
+    aboutEyebrow: '앱 설명',
+    aboutTitle: '왜 이 앱이 필요한가',
+    aboutBody1: '성경의 많은 사건과 절기는 유대력이라는 시간의 강 위에서 흘러갑니다. 이 앱은 한국 달력의 날짜 위에 유대 절기와 성경 읽기 본문을 함께 올려, 오늘 무엇을 읽어야 하는지 쉽게 보도록 돕습니다.',
+    aboutBody2: '',
+    usageEyebrow: '사용 방법',
+    usageTitle: '이렇게 사용하세요',
+    usageStep1: '상단에서 오늘 날짜와 유대력 날짜를 확인합니다.',
+    usageStep2: '“오늘의 본문”에서 모세오경 읽기와 신약 연결 읽기를 읽습니다.',
+    usageStep3: '“주간 보기”는 모바일에서 선명하게 읽을 때 사용합니다.',
+    usageStep4: '“달력으로 보기”는 한 달의 절기와 본문 흐름을 함께 볼 때 사용합니다.',
+    usageStep5: '낯선 말은 아래 “용어 설명”에서 확인합니다.',
+    guideJewishCalendarTitle: '유대력',
+    guideJewishCalendarBody: '성경 절기와 유대 전통의 날짜를 계산할 때 사용하는 달력입니다. 양력과 달라서 절기 날짜가 해마다 조금씩 바뀝니다.',
+    guideHolidayTitle: '유대 절기',
+    guideHolidayBody: '유월절, 무교절, 오순절, 나팔절, 속죄일, 장막절처럼 성경과 유대 전통에서 중요한 날입니다.',
+    guideNtTitle: '신약 연결 읽기',
+    guideNtBody: '모세오경의 흐름과 연결하여 신약을 함께 읽는 부분입니다. 최종 버전에서는 1년 안에 신약 전체를 읽도록 정교하게 배정합니다.',
+    guideTraditionalNameTitle: '전통 이름',
+    guideTraditionalNameBody: '고라, 후카트, 발락처럼 매주 읽는 모세오경 구간에 붙은 이름입니다. 앱에서는 쉬운 제목을 먼저 보여주고 전통 이름은 보조로 표시합니다.',
+    portionTitleLabel: '제목',
+    traditionalNameLabel: '전통 이름',
+    copyrightEyebrow: '저작권 설명',
+    copyrightTitle: '출처와 사용 범위',
+    copyrightBody1: '유대력과 절기 데이터는 Hebcal API를 사용하며, 앱 하단에 출처를 표시합니다.',
+    copyrightBody2: '영어 성경 본문은 King James Version(KJV)을 기준으로 연결할 예정입니다.',
+    copyrightBody3: '한국어 성경 본문은 1단계에서 본문 전체가 아니라 읽기 범위만 표시합니다.',
+  },
+  en: {
+    eyebrow: 'Jewish Bible Calendar',
+    appTitle: 'Jewish Bible Calendar',
+    loading: "Loading Jewish calendar and Bible readings...",
+    loaded: '',
+    offline: 'Network unavailable. Showing the saved app shell.',
+    todayReading: "Today's Text",
+    monthlyReadingTitle: 'Text Calendar',
+    monthlyReadingHelp: 'Shown one week at a time for better mobile readability. Each date includes holidays and passages together.',
+    viewModeLabel: 'View',
+    weekView: 'Week View',
+    calendarView: 'View as Calendar',
+    weeklyReadingHelp: 'Week view is the default for mobile readability. Choose calendar view to see holidays and passages together in a monthly calendar.',
+    calendarReadingHelp: 'Jewish holidays and date-based passages are shown together on a monthly calendar. Swipe sideways if the screen is narrow.',
+    dailyTorah: 'Torah',
+    dailyHaftarah: 'Prophets',
+    dailyNt: 'NT Connection',
+    noDailyReading: 'No passage has been assigned yet.',
+    todayBadge: 'Today',
+    refresh: 'Refresh',
+    torah: 'Torah Reading',
+    torahHelp: '',
+    haftarah: 'Saturday Prophets Reading',
+    haftarahHelp: '',
+    sabbathReadingTitle: 'Saturday Prophets Reading',
+    ntFulfillment: 'New Testament Connecting Reading',
+    ntHelp: '',
+    termGuideTitle: 'Term Explanation',
+    guideTorahTitle: 'Torah Reading',
+    guideTorahBody: 'The date-matched reading from Genesis through Deuteronomy. In Jewish tradition it is called Torah.',
+    guideHaftarahTitle: 'Saturday Prophets Reading',
+    guideHaftarahBody: 'A Prophets or historical reading traditionally read on Saturday. It is called Haftarah in Jewish tradition.',
+    guideParashaTitle: 'Weekly Reading Portion',
+    guideParashaBody: 'The Torah section divided across the week. In Jewish tradition it is called a parashah.',
+    guideRoshTitle: 'First Day of the Jewish Month',
+    guideRoshBody: 'The beginning of a new Jewish month, traditionally called Rosh Chodesh.',
+    holidays: "Today's Holidays and Events",
+    noHoliday: 'No holidays or commemorations are listed for today.',
+    monthPreview: 'This Month in the Jewish Calendar',
+    diaspora: '',
+    israel: '',
+    notMapped: 'The New Testament connecting reading for this date has not been assigned yet.',
+    defaultNote: 'Stage 1 uses a temporary date-based New Testament plan so every date shows a passage. A refined Torah-linked plan will replace it later.',
+    footerRights: 'Jewish calendar data: Hebcal API, CC BY 4.0. English Bible text target: King James Version (KJV). Korean Bible text is reference-only in Stage 1.',
+    prevWeek: 'Prev',
+    thisWeek: 'This Week',
+    nextWeek: 'Next',
+    weeklyHolidaysTitle: 'Jewish Holidays This Week',
+    monthlyHolidaysTitle: 'Jewish Holidays This Month',
+    noWeeklyHoliday: 'No holidays or commemorations are listed for this week.',
+    noMonthlyHoliday: 'No holidays or commemorations are listed for this month.',
+    prevMonth: 'Prev Month',
+    thisMonth: 'This Month',
+    nextMonth: 'Next Month',
+    parashaPrefix: 'Weekly portion',
+    hebrewYearPrefix: 'Jewish year',
+    menuToday: 'Today',
+    menuAbout: 'About',
+    menuUsage: 'How to Use',
+    menuTerms: 'Terms',
+    menuCopyright: 'Copyright',
+    aboutEyebrow: 'About the App',
+    aboutTitle: 'Why this app matters',
+    aboutBody1: 'Many biblical events and feasts move along the timeline of the Jewish calendar. This app places Jewish holidays and date-matched Bible readings on the calendar you use every day, so the next passage is clear at a glance.',
+    aboutBody2: '',
+    usageEyebrow: 'How to Use',
+    usageTitle: 'Use it this way',
+    usageStep1: 'Check today’s date and the Jewish calendar date at the top.',
+    usageStep2: 'Read the Torah reading and New Testament connecting reading under “Today’s Text.”',
+    usageStep3: 'Use Week View for the clearest mobile reading experience.',
+    usageStep4: 'Use View as Calendar to see the month’s holidays and reading flow together.',
+    usageStep5: 'Check Term Explanation when a word is unfamiliar.',
+    guideJewishCalendarTitle: 'Jewish Calendar',
+    guideJewishCalendarBody: 'The calendar used for biblical feasts and Jewish dates. Its dates move each year when compared with the Gregorian calendar.',
+    guideHolidayTitle: 'Jewish Holidays',
+    guideHolidayBody: 'Important biblical and Jewish days such as Passover, Unleavened Bread, Shavuot, Trumpets, Atonement, and Tabernacles.',
+    guideNtTitle: 'New Testament Connecting Reading',
+    guideNtBody: 'A New Testament reading connected to the Torah flow. The final version will refine this plan so the entire New Testament is read within one year.',
+    guideTraditionalNameTitle: 'Traditional Name',
+    guideTraditionalNameBody: 'Names such as Korach, Chukat, and Balak are traditional labels for weekly Torah portions. This app shows an easier title first and keeps the traditional name as a helper.',
+    portionTitleLabel: 'Title',
+    traditionalNameLabel: 'Traditional name',
+    copyrightEyebrow: 'Copyright',
+    copyrightTitle: 'Sources and usage',
+    copyrightBody1: 'Jewish calendar and holiday data use the Hebcal API, with attribution shown in the app footer.',
+    copyrightBody2: 'English Bible text is planned to use the King James Version (KJV).',
+    copyrightBody3: 'Korean Bible text is reference-only in Stage 1.',
+  },
+};
+
+const hebrewMonthKo = {
+  Nisan: '니산월', Iyyar: '이야르월', Iyar: '이야르월', Sivan: '시완월', Tammuz: '탐무즈월', Av: '아브월', Elul: '엘룰월',
+  Tishrei: '티슈리월', Cheshvan: '헤슈반월', Marcheshvan: '헤슈반월', Kislev: '키슬레브월', Tevet: '테벳월', Shvat: '슈밧월', Shevat: '슈밧월',
+  Adar: '아달월', 'Adar I': '아달 1월', 'Adar II': '아달 2월', 'Adar 1': '아달 1월', 'Adar 2': '아달 2월',
+};
+
+const hebrewMonthHeb = {
+  Nisan: 'ניסן', Iyyar: 'אייר', Iyar: 'אייר', Sivan: 'סיון', Tammuz: 'תמוז', Av: 'אב', Elul: 'אלול',
+  Tishrei: 'תשרי', Cheshvan: 'חשוון', Marcheshvan: 'מרחשוון', Kislev: 'כסלו', Tevet: 'טבת', Shvat: 'שבט', Shevat: 'שבט',
+  Adar: 'אדר', 'Adar I': 'אדר א׳', 'Adar II': 'אדר ב׳', 'Adar 1': 'אדר א׳', 'Adar 2': 'אדר ב׳',
+};
+
+const parashaKo = {
+  Bereshit: '베레쉬트', Noach: '노아흐', 'Lech-Lecha': '레흐 레하', Vayera: '바예라', 'Chayei Sara': '하예이 사라', Toldot: '톨도트', Vayetzei: '바예체', Vayishlach: '바이쉴라흐', Vayeshev: '바예셰브', Miketz: '미케츠', Vayigash: '바이가쉬', Vayechi: '바예히',
+  Shemot: '쉐모트', Vaera: '바에라', Bo: '보', Beshalach: '베샬라흐', Yitro: '이트로', Mishpatim: '미쉬파팀', Terumah: '테루마', Tetzaveh: '테차베', 'Ki Tisa': '키 티사', Vayakhel: '바야켈', Pekudei: '페쿠데이', 'Vayakhel-Pekudei': '바야켈-페쿠데이',
+  Vayikra: '바이크라', Tzav: '차브', Shmini: '쉐미니', Tazria: '타즈리아', Metzora: '메초라', 'Tazria-Metzora': '타즈리아-메초라', 'Achrei Mot': '아하레이 모트', Kedoshim: '케도쉼', 'Achrei Mot-Kedoshim': '아하레이 모트-케도쉼', Emor: '에모르', Behar: '베하르', Bechukotai: '베후코타이', 'Behar-Bechukotai': '베하르-베후코타이',
+  Bamidbar: '바미드바르', Nasso: '나소', "Beha'alotcha": '베하알로트하', "Sh'lach": '쉴라흐', Korach: '고라', Chukat: '후카트', Balak: '발락', 'Chukat-Balak': '후카트-발락', Pinchas: '핀하스', Matot: '마토트', Masei: '마세이', 'Matot-Masei': '마토트-마세이',
+  Devarim: '데바림', Vaetchanan: '바에트하난', Eikev: '에케브', "Re'eh": '레에', Shoftim: '쇼프팀', 'Ki Teitzei': '키 테체', 'Ki Tavo': '키 타보', Nitzavim: '니차빔', Vayeilech: '바예일레흐', 'Nitzavim-Vayeilech': '니차빔-바예일레흐', Haazinu: '하아지누', 'Vezot Haberakhah': '베조트 하브라카',
+};
+
+const parashaSimpleTitle = {
+  Bereshit: { ko: '창조와 시작', en: 'Creation and beginnings' },
+  Noach: { ko: '노아와 홍수', en: 'Noah and the flood' },
+  'Lech-Lecha': { ko: '아브라함을 부르심', en: 'The calling of Abraham' },
+  Vayera: { ko: '약속과 시험', en: 'Promise and testing' },
+  'Chayei Sara': { ko: '사라의 생애와 이삭의 아내', en: 'Sarah’s life and Isaac’s bride' },
+  Toldot: { ko: '야곱과 에서', en: 'Jacob and Esau' },
+  Vayetzei: { ko: '야곱의 도피와 약속', en: 'Jacob’s flight and promise' },
+  Vayishlach: { ko: '야곱의 귀환과 씨름', en: 'Jacob’s return and wrestling' },
+  Vayeshev: { ko: '요셉의 꿈과 고난', en: 'Joseph’s dreams and suffering' },
+  Miketz: { ko: '요셉의 높아짐', en: 'Joseph raised up' },
+  Vayigash: { ko: '유다의 간청과 가족의 회복', en: 'Judah’s plea and family restoration' },
+  Vayechi: { ko: '야곱의 축복', en: 'Jacob’s blessing' },
+  Shemot: { ko: '이스라엘의 고난과 모세의 부르심', en: 'Israel’s affliction and Moses’ calling' },
+  Vaera: { ko: '하나님의 이름과 재앙의 시작', en: 'God’s name and the plagues begin' },
+  Bo: { ko: '유월절과 출애굽의 밤', en: 'Passover and the night of Exodus' },
+  Beshalach: { ko: '홍해와 광야의 시작', en: 'The Red Sea and the wilderness begins' },
+  Yitro: { ko: '십계명과 시내산 언약', en: 'The Ten Commandments and Sinai covenant' },
+  Mishpatim: { ko: '언약의 법도', en: 'Laws of the covenant' },
+  Terumah: { ko: '성막을 위한 예물', en: 'Offerings for the tabernacle' },
+  Tetzaveh: { ko: '제사장 옷과 등불', en: 'Priestly garments and the lamp' },
+  'Ki Tisa': { ko: '금송아지와 언약의 회복', en: 'The golden calf and covenant restored' },
+  Vayakhel: { ko: '성막을 위한 자원하는 마음', en: 'Willing hearts for the tabernacle' },
+  Pekudei: { ko: '성막 완성과 하나님의 영광', en: 'The tabernacle completed and God’s glory' },
+  'Vayakhel-Pekudei': { ko: '성막 건축과 완성', en: 'The tabernacle built and completed' },
+  Vayikra: { ko: '제사의 시작', en: 'The sacrifices begin' },
+  Tzav: { ko: '제사장의 섬김', en: 'The priestly service' },
+  Shmini: { ko: '거룩한 예배와 나답과 아비후', en: 'Holy worship and Nadab and Abihu' },
+  Tazria: { ko: '정결과 회복의 시작', en: 'Purity and restoration begin' },
+  Metzora: { ko: '부정함에서 정결함으로', en: 'From uncleanness to cleansing' },
+  'Tazria-Metzora': { ko: '정결과 회복', en: 'Purity and restoration' },
+  'Achrei Mot': { ko: '속죄일과 거룩한 삶', en: 'Atonement and holy living' },
+  Kedoshim: { ko: '거룩하라', en: 'Be holy' },
+  'Achrei Mot-Kedoshim': { ko: '속죄와 거룩한 삶', en: 'Atonement and holiness' },
+  Emor: { ko: '제사장과 절기', en: 'Priests and appointed times' },
+  Behar: { ko: '안식년과 희년', en: 'Sabbath year and Jubilee' },
+  Bechukotai: { ko: '순종의 복과 불순종의 경고', en: 'Blessing for obedience and warning for rebellion' },
+  'Behar-Bechukotai': { ko: '안식년, 희년, 언약의 경고', en: 'Sabbath year, Jubilee, and covenant warnings' },
+  Bamidbar: { ko: '광야에서 세우신 진', en: 'The camp ordered in the wilderness' },
+  Nasso: { ko: '헌신과 축복', en: 'Dedication and blessing' },
+  "Beha'alotcha": { ko: '등잔과 광야의 행진', en: 'The lampstand and the wilderness march' },
+  "Sh'lach": { ko: '정탐꾼과 불신앙', en: 'The spies and unbelief' },
+  Korach: { ko: '고라의 반역', en: 'Korah’s rebellion' },
+  Chukat: { ko: '정결 규례와 광야의 놋뱀', en: 'Purification law and the bronze serpent' },
+  Huqat: { ko: '정결 규례와 광야의 놋뱀', en: 'Purification law and the bronze serpent' },
+  Balak: { ko: '발락과 발람', en: 'Balak and Balaam' },
+  'Chukat-Balak': { ko: '정결 규례, 놋뱀, 발락과 발람', en: 'Purification, the bronze serpent, Balak and Balaam' },
+  'Huqat-Balak': { ko: '정결 규례, 놋뱀, 발락과 발람', en: 'Purification, the bronze serpent, Balak and Balaam' },
+  Pinchas: { ko: '비느하스의 열심과 새 세대', en: 'Phinehas’ zeal and the new generation' },
+  Matot: { ko: '서원과 전쟁', en: 'Vows and war' },
+  Masei: { ko: '광야 여정의 마침', en: 'The wilderness journey completed' },
+  'Matot-Masei': { ko: '서원, 전쟁, 광야 여정의 마침', en: 'Vows, war, and the wilderness journey completed' },
+  Devarim: { ko: '모세의 마지막 설교 시작', en: 'Moses begins his final sermon' },
+  Vaetchanan: { ko: '들으라 이스라엘아', en: 'Hear, O Israel' },
+  Eikev: { ko: '기억하라, 순종하라', en: 'Remember and obey' },
+  "Re'eh": { ko: '복과 저주의 선택', en: 'Choosing blessing or curse' },
+  Shoftim: { ko: '공의와 지도자', en: 'Justice and leaders' },
+  'Ki Teitzei': { ko: '일상 속의 거룩함', en: 'Holiness in daily life' },
+  'Ki Tavo': { ko: '첫 열매와 언약의 고백', en: 'Firstfruits and covenant confession' },
+  Nitzavim: { ko: '생명과 죽음의 선택', en: 'The choice of life or death' },
+  Vayeilech: { ko: '모세의 마지막 당부', en: 'Moses’ final charge' },
+  'Nitzavim-Vayeilech': { ko: '언약 앞에 서서 다음 세대로', en: 'Standing before the covenant and passing it on' },
+  Haazinu: { ko: '모세의 노래', en: 'The song of Moses' },
+  'Vezot Haberakhah': { ko: '모세의 마지막 축복', en: 'Moses’ final blessing' },
+};
+
+const bookKo = {
+  Genesis: '창세기', Gen: '창세기', 'Gen.': '창세기', Exodus: '출애굽기', Exod: '출애굽기', 'Exod.': '출애굽기', Leviticus: '레위기', Lev: '레위기', 'Lev.': '레위기', Numbers: '민수기', Num: '민수기', 'Num.': '민수기', Deuteronomy: '신명기', Deut: '신명기', 'Deut.': '신명기',
+  Joshua: '여호수아', Josh: '여호수아', 'Josh.': '여호수아', Judges: '사사기', Judg: '사사기', 'Judg.': '사사기', Ruth: '룻기', Samuel: '사무엘', 'I Samuel': '사무엘상', 'II Samuel': '사무엘하', '1 Samuel': '사무엘상', '2 Samuel': '사무엘하', Kings: '열왕기', 'I Kings': '열왕기상', 'II Kings': '열왕기하', '1 Kings': '열왕기상', '2 Kings': '열왕기하', Isaiah: '이사야', Isa: '이사야', 'Isa.': '이사야', Jeremiah: '예레미야', Jer: '예레미야', 'Jer.': '예레미야', Ezekiel: '에스겔', Ezek: '에스겔', 'Ezek.': '에스겔',
+  Hosea: '호세아', Joel: '요엘', Amos: '아모스', Obadiah: '오바댜', Jonah: '요나', Micah: '미가', Nahum: '나훔', Habakkuk: '하박국', Zephaniah: '스바냐', Haggai: '학개', Zechariah: '스가랴', Zech: '스가랴', 'Zech.': '스가랴', Malachi: '말라기', Mal: '말라기', 'Mal.': '말라기', Psalms: '시편', Psalm: '시편', Ps: '시편', 'Ps.': '시편', Proverbs: '잠언', Prov: '잠언', 'Prov.': '잠언',
+  Matthew: '마태복음', Matt: '마태복음', 'Matt.': '마태복음', Mark: '마가복음', Luke: '누가복음', John: '요한복음', Acts: '사도행전', Romans: '로마서', Rom: '로마서', 'Rom.': '로마서', Corinthians: '고린도서', 'I Corinthians': '고린도전서', 'II Corinthians': '고린도후서', '1 Corinthians': '고린도전서', '2 Corinthians': '고린도후서', Galatians: '갈라디아서', Ephesians: '에베소서', Philippians: '빌립보서', Colossians: '골로새서', Thessalonians: '데살로니가서', 'I Thessalonians': '데살로니가전서', 'II Thessalonians': '데살로니가후서', '1 Thessalonians': '데살로니가전서', '2 Thessalonians': '데살로니가후서', Timothy: '디모데서', 'I Timothy': '디모데전서', 'II Timothy': '디모데후서', '1 Timothy': '디모데전서', '2 Timothy': '디모데후서', Titus: '디도서', Philemon: '빌레몬서', Hebrews: '히브리서', James: '야고보서', Peter: '베드로서', 'I Peter': '베드로전서', 'II Peter': '베드로후서', '1 Peter': '베드로전서', '2 Peter': '베드로후서', Jude: '유다서', Revelation: '요한계시록', Rev: '요한계시록', 'Rev.': '요한계시록',
+};
+
+
+const ntBookChapters = [
+  ['Matthew', 28], ['Mark', 16], ['Luke', 24], ['John', 21], ['Acts', 28],
+  ['Romans', 16], ['1 Corinthians', 16], ['2 Corinthians', 13], ['Galatians', 6], ['Ephesians', 6],
+  ['Philippians', 4], ['Colossians', 4], ['1 Thessalonians', 5], ['2 Thessalonians', 3], ['1 Timothy', 6],
+  ['2 Timothy', 4], ['Titus', 3], ['Philemon', 1], ['Hebrews', 13], ['James', 5],
+  ['1 Peter', 5], ['2 Peter', 3], ['1 John', 5], ['2 John', 1], ['3 John', 1],
+  ['Jude', 1], ['Revelation', 22]
+];
+
+const ntChapterList = ntBookChapters.flatMap(([book, chapters]) =>
+  Array.from({ length: chapters }, (_, index) => `${book} ${index + 1}`)
+);
+
+const eventPhraseKo = [
+  [/^Parashat\s+(.+)$/i, (_, name) => `${t('parashaPrefix')}: ${translateParashaName(name, false)} (${name})`],
+  [/^Rosh Chodesh\s+(.+)$/i, (_, month) => `새 달의 첫날: ${hebrewMonthKo[month] || month} (월삭 / Rosh Chodesh ${month})`],
+  [/^Erev Pesach$/i, () => '유월절 전날 (Erev Pesach)'],
+  [/^Pesach I$/i, () => '유월절 첫째 날 (Pesach I)'],
+  [/^Pesach II$/i, () => '유월절 둘째 날 (Pesach II)'],
+  [/^Pesach VII$/i, () => '무교절 마지막 날 (Pesach VII)'],
+  [/^Pesach VIII$/i, () => '유월절 여덟째 날 (Pesach VIII)'],
+  [/^Pesach\s+(.+)$/i, (_, rest) => `유월절 ${rest} (Pesach ${rest})`],
+  [/^Erev Shavuot$/i, () => '오순절 전날 (Erev Shavuot)'],
+  [/^Shavuot I$/i, () => '오순절 첫째 날 (Shavuot I)'],
+  [/^Shavuot II$/i, () => '오순절 둘째 날 (Shavuot II)'],
+  [/^Erev Rosh Hashana$/i, () => '나팔절 전날 (Erev Rosh Hashanah)'],
+  [/^Rosh Hashana I$/i, () => '나팔절 첫째 날 (Rosh Hashanah I)'],
+  [/^Rosh Hashana II$/i, () => '나팔절 둘째 날 (Rosh Hashanah II)'],
+  [/^Tzom Gedaliah$/i, () => '그달리야 금식일 (Tzom Gedaliah)'],
+  [/^Erev Yom Kippur$/i, () => '속죄일 전날 (Erev Yom Kippur)'],
+  [/^Yom Kippur$/i, () => '속죄일 (Yom Kippur)'],
+  [/^Erev Sukkot$/i, () => '장막절 전날 (Erev Sukkot)'],
+  [/^Sukkot I$/i, () => '장막절 첫째 날 (Sukkot I)'],
+  [/^Sukkot II$/i, () => '장막절 둘째 날 (Sukkot II)'],
+  [/^Sukkot\s+(.+)$/i, (_, rest) => `장막절 ${rest} (Sukkot ${rest})`],
+  [/^Shmini Atzeret$/i, () => '여덟째 날 집회 (Shmini Atzeret)'],
+  [/^Simchat Torah$/i, () => '토라의 기쁨 (Simchat Torah)'],
+  [/^Chanukah:\s*(\d+)\s*Candle$/i, (_, n) => `하누카 ${n}번째 촛불 (Chanukah)`],
+  [/^Chanukah:\s*(\d+)\s*Candles$/i, (_, n) => `하누카 ${n}번째 촛불 (Chanukah)`],
+  [/^Chanukah:\s*(\d+)\s*Day$/i, (_, n) => `하누카 ${n}일 (Chanukah)`],
+  [/^Chanukah$/i, () => '하누카 (Chanukah)'],
+  [/^Tu BiShvat$/i, () => '나무들의 새해 (Tu BiShvat)'],
+  [/^Purim Katan$/i, () => '작은 부림절 (Purim Katan)'],
+  [/^Erev Purim$/i, () => '부림절 전날 (Erev Purim)'],
+  [/^Purim$/i, () => '부림절 (Purim)'],
+  [/^Shushan Purim$/i, () => '수산 부림절 (Shushan Purim)'],
+  [/^Lag BaOmer$/i, () => '오메르 33일 (Lag BaOmer)'],
+  [/^Fast of Tammuz$/i, () => '탐무즈 금식일 (Fast of Tammuz)'],
+  [/^Tisha B'Av$/i, () => '아브월 9일 금식일 (Tisha B’Av)'],
+  [/^Tu B'Av$/i, () => '아브월 15일 (Tu B’Av)'],
+  [/^Shabbat Mevarchim$/i, () => '다음 달을 준비하는 안식일 (Shabbat Mevarchim)'],
+  [/^Shabbat Chazon$/i, () => '하존 안식일 (Shabbat Chazon)'],
+  [/^Shabbat Nachamu$/i, () => '위로의 안식일 (Shabbat Nachamu)'],
+  [/^Yom HaShoah$/i, () => '홀로코스트 추모일 (Yom HaShoah)'],
+  [/^Yom HaZikaron$/i, () => '이스라엘 현충일 (Yom HaZikaron)'],
+  [/^Yom HaAtzma'ut$/i, () => '이스라엘 독립기념일 (Yom HaAtzma’ut)'],
+  [/^Yom Yerushalayim$/i, () => '예루살렘의 날 (Yom Yerushalayim)'],
+  [/^Yom HaAliyah$/i, () => '알리야의 날 (Yom HaAliyah)'],
+  [/^Rosh Hashana LaBehemot$/i, () => '가축의 새해 (Rosh Hashanah LaBehemot)'],
+];
+
+const els = {
+  languageToggle: document.querySelector('#languageToggle'),
+  refreshButton: document.querySelector('#refreshButton'),
+  gregorianDate: document.querySelector('#gregorianDate'),
+  hebrewDate: document.querySelector('#hebrewDate'),
+  regionLabel: document.querySelector('#regionLabel'),
+  statusCard: document.querySelector('#statusCard'),
+  statusText: document.querySelector('#statusText'),
+  parashaTitle: document.querySelector('#parashaTitle'),
+  torahRef: document.querySelector('#torahRef'),
+  haftarahRef: document.querySelector('#haftarahRef'),
+  sabbathReadingBlock: document.querySelector('#sabbathReadingBlock'),
+  ntRef: document.querySelector('#ntRef'),
+  ntNote: document.querySelector('#ntNote'),
+  holidayList: document.querySelector('#holidayList'),
+  monthEvents: document.querySelector('#monthEvents'),
+  readingCalendar: document.querySelector('#readingCalendar'),
+  weeklyHolidayStrip: document.querySelector('#weeklyHolidayStrip'),
+  prevWeekButton: document.querySelector('#prevWeekButton'),
+  thisWeekButton: document.querySelector('#thisWeekButton'),
+  nextWeekButton: document.querySelector('#nextWeekButton'),
+  weekViewButton: document.querySelector('#weekViewButton'),
+  calendarViewButton: document.querySelector('#calendarViewButton'),
+  readingViewHelp: document.querySelector('#readingViewHelp'),
+  holidayScopeTitle: document.querySelector('#holidayScopeTitle'),
+};
+
+function t(key) {
+  return i18n[state.language][key] || i18n.en[key] || key;
+}
+
+function applyLanguage() {
+  document.documentElement.lang = state.language;
+  document.querySelectorAll('[data-i18n]').forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
+  });
+  els.languageToggle.textContent = state.language === 'ko' ? 'EN' : 'KO';
+  els.regionLabel.textContent = '';
+  els.regionLabel.hidden = true;
+}
+
+function formatGregorian(date) {
+  return new Intl.DateTimeFormat(state.language === 'ko' ? 'ko-KR' : 'en-US', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric', month: 'long', day: 'numeric', weekday: 'long',
+  }).format(date);
+}
+
+function ymd(date) {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
+  });
+  return formatter.format(date);
+}
+
+function shortDate(dateString) {
+  const date = new Date(`${dateString}T00:00:00+09:00`);
+  if (Number.isNaN(date.getTime())) return dateString;
+  return new Intl.DateTimeFormat(state.language === 'ko' ? 'ko-KR' : 'en-US', {
+    timeZone: 'Asia/Seoul', month: 'long', day: 'numeric', weekday: 'short',
+  }).format(date);
+}
+
+async function fetchJson(url) {
+  const response = await fetch(url, { headers: { accept: 'application/json' } });
+  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+  return response.json();
+}
+
+async function loadNtPlan() {
+  if (window.__NT_PLAN__) {
+    state.ntPlan = window.__NT_PLAN__;
+    return;
+  }
+  const response = await fetch('./data/nt-fulfillment-plan.sample.json');
+  state.ntPlan = await response.json();
+}
+
+function hebcalUrlFor(date) {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const israelParam = state.israelMode ? '&i=on' : '';
+  return `https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&year=${year}&month=${month}&ss=on&mf=on&o=on&s=on&geo=none&lg=en${israelParam}`;
+}
+
+function mergeCalendarItems(calendars) {
+  const seen = new Set();
+  const items = [];
+  calendars.forEach((calendar) => {
+    (calendar.items || []).forEach((item) => {
+      const key = `${item.date}|${item.category}|${item.title}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        items.push(item);
+      }
+    });
+  });
+  return items.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+}
+
+async function fetchCalendarBundle(date) {
+  const current = new Date(date.getFullYear(), date.getMonth(), 1);
+  const prev = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+  const next = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+  const calendars = await Promise.all([
+    fetchJson(hebcalUrlFor(prev)),
+    fetchJson(hebcalUrlFor(current)),
+    fetchJson(hebcalUrlFor(next)),
+  ]);
+  return mergeCalendarItems(calendars);
+}
+
+function converterUrl() {
+  const [gy, gm, gd] = ymd(state.today).split('-');
+  return `https://www.hebcal.com/converter?cfg=json&gy=${gy}&gm=${Number(gm)}&gd=${Number(gd)}&g2h=1`;
+}
+
+function eventsForToday(items) {
+  const todayKey = ymd(state.today);
+  return items.filter((item) => item.date?.startsWith(todayKey));
+}
+
+function findParasha(items) {
+  const today = state.today;
+  const futureParashot = items
+    .filter((item) => item.category === 'parashat')
+    .map((item) => ({ ...item, dateObject: new Date(`${item.date}T00:00:00+09:00`) }))
+    .filter((item) => item.dateObject >= new Date(`${ymd(today)}T00:00:00+09:00`))
+    .sort((a, b) => a.dateObject - b.dateObject);
+
+  return futureParashot[0] || items.find((item) => item.category === 'parashat') || null;
+}
+
+function mapNtReading(parashaTitle = '') {
+  const normalized = parashaTitle.replace(/^Parashat\s+/i, '').toLowerCase();
+  return state.ntPlan.find((row) => normalized.includes(row.parashaKey.toLowerCase()));
+}
+
+function translateParashaName(name = '', withPrefix = true) {
+  const clean = name.replace(/^Parashat\s+/i, '').trim();
+  const ko = parashaKo[clean] || clean.split('-').map((part) => parashaKo[part.trim()] || part.trim()).join('-');
+  return withPrefix ? `${t('parashaPrefix')}: ${ko} (${clean})` : ko;
+}
+
+function escapeHtml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function parashaTraditionalName(clean = '') {
+  if (!clean) return '';
+  if (state.language !== 'ko') return clean;
+  const ko = parashaKo[clean] || clean.split('-').map((part) => parashaKo[part.trim()] || part.trim()).join('-');
+  return `${ko} (${clean})`;
+}
+
+function parashaSimpleTitleFor(clean = '') {
+  if (!clean) return '';
+  const exact = parashaSimpleTitle[clean];
+  if (exact) return state.language === 'ko' ? exact.ko : exact.en;
+  const parts = clean.split('-').map((part) => part.trim()).filter(Boolean);
+  const titles = parts.map((part) => parashaSimpleTitle[part]).filter(Boolean).map((item) => state.language === 'ko' ? item.ko : item.en);
+  if (titles.length) return titles.join(state.language === 'ko' ? ', ' : ', ');
+  return state.language === 'ko' ? translateParashaName(clean, false) : clean;
+}
+
+function renderParashaTitle(name = '') {
+  const clean = name.replace(/^Parashat\s+/i, '').trim();
+  if (!clean || clean === '-') return '-';
+  const simple = parashaSimpleTitleFor(clean);
+  const traditional = parashaTraditionalName(clean);
+  return `
+    <span class="portion-main"><strong>${escapeHtml(t('portionTitleLabel'))}</strong> ${escapeHtml(simple)}</span>
+    <span class="portion-sub"><strong>${escapeHtml(t('traditionalNameLabel'))}</strong> ${escapeHtml(traditional)}</span>
+  `;
+}
+
+function translateReference(ref = '') {
+  if (state.language !== 'ko') return ref || '-';
+  if (!ref) return '-';
+  let output = ref;
+  const keys = Object.keys(bookKo).sort((a, b) => b.length - a.length);
+  for (const key of keys) {
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    output = output.replace(new RegExp(`(^|[;,(\\s])${escaped}(?=\\s+\\d)`, 'g'), `$1${bookKo[key]}`);
+  }
+  return output;
+}
+
+function translateEventTitle(title = '') {
+  if (state.language !== 'ko') return title || '-';
+  for (const [pattern, replacer] of eventPhraseKo) {
+    if (pattern.test(title)) {
+      return title.replace(pattern, replacer);
+    }
+  }
+  return `${title}`;
+}
+
+function formatHebrewDate(converter) {
+  if (state.language !== 'ko') {
+    return `${converter.hebrew || converter.hm || ''} · ${converter.heDateParts?.y || converter.hy || ''}`.replace(/ · $/, '');
+  }
+  const day = converter.hd || converter.heDateParts?.d;
+  const month = converter.hm || converter.heDateParts?.m;
+  const year = converter.hy || converter.heDateParts?.y;
+  const monthKo = hebrewMonthKo[month] || month || '';
+  const monthHeb = hebrewMonthHeb[month] || '';
+  const parenthetical = [monthHeb, month].filter(Boolean).join(' / ');
+  if (!day || !monthKo || !year) return converter.hebrew || '-';
+  return `${t('hebrewYearPrefix')} ${year}년 ${monthKo} ${day}일${parenthetical ? ` (${parenthetical})` : ''}`;
+}
+
+function renderHolidayList(items) {
+  const holidays = items.filter((item) => ['holiday', 'omer', 'roshchodesh'].includes(item.category));
+  els.holidayList.innerHTML = '';
+
+  if (!holidays.length) {
+    const li = document.createElement('li');
+    li.textContent = t('noHoliday');
+    els.holidayList.append(li);
+    return;
+  }
+
+  holidays.forEach((holiday) => {
+    const li = document.createElement('li');
+    li.textContent = translateEventTitle(holiday.title);
+    els.holidayList.append(li);
+  });
+}
+
+function renderMonthEvents(items) {
+  const notable = items
+    .filter((item) => ['holiday', 'parashat', 'roshchodesh'].includes(item.category))
+    .slice(0, 18);
+  els.monthEvents.innerHTML = '';
+
+  notable.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'event-row';
+    const translated = translateEventTitle(item.title);
+    row.innerHTML = `<p class="event-date">${shortDate(item.date)}</p><p class="event-title">${translated}</p>`;
+    els.monthEvents.append(row);
+  });
+}
+
+
+function dayLabels() {
+  return state.language === 'ko'
+    ? ['주일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
+    : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+}
+
+function splitNtReferences(nt) {
+  if (!nt) return [];
+  const daily = state.language === 'ko' ? (nt.dailyNtKo || nt.dailyNt) : (nt.dailyNtEn || nt.dailyNt);
+  if (Array.isArray(daily) && daily.length) return daily;
+  return (nt.ntRef || '').split(';').map((part) => part.trim()).filter(Boolean);
+}
+
+function getDailyTorahReadings(leyning = {}) {
+  const keys = ['1', '2', '3', '4', '5', '6', '7'];
+  const readings = keys.map((key) => leyning[key] || leyning[`aliyah${key}`] || '');
+  if (readings.some(Boolean)) return readings;
+  const full = leyning.torah || '';
+  return [full, '', '', '', '', '', ''];
+}
+
+function getDailyNtReadings(nt) {
+  const parts = splitNtReferences(nt);
+  const out = Array(7).fill('');
+  parts.slice(0, 7).forEach((part, index) => { out[index] = part; });
+  return out;
+}
+
+function dateAtSeoulMidnight(dateString) {
+  return new Date(`${dateString}T00:00:00+09:00`);
+}
+
+function addDays(date, days) {
+  const result = new Date(date.getTime());
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+
+function getDayOfYear(date) {
+  const start = new Date(date.getFullYear(), 0, 1);
+  return Math.floor((date - start) / 86400000) + 1;
+}
+
+function daysInYear(year) {
+  return new Date(year, 1, 29).getMonth() === 1 ? 366 : 365;
+}
+
+function generatedNtReferenceForDate(date) {
+  const totalDays = daysInYear(date.getFullYear());
+  const day = Math.max(1, Math.min(totalDays, getDayOfYear(date)));
+  const index = Math.min(ntChapterList.length - 1, Math.floor((day - 1) * ntChapterList.length / totalDays));
+  return ntChapterList[index] || '';
+}
+
+function getDailyNtForDate(nt, index, date) {
+  const ntDays = getDailyNtReadings(nt);
+  return ntDays[index] || generatedNtReferenceForDate(date);
+}
+
+function getWeekStart(parasha) {
+  if (parasha?.date) {
+    return addDays(dateAtSeoulMidnight(parasha.date), -6);
+  }
+  const today = dateAtSeoulMidnight(ymd(state.today));
+  return addDays(today, -today.getDay());
+}
+
+function getDailyIndex(parasha) {
+  const weekStart = getWeekStart(parasha);
+  const today = dateAtSeoulMidnight(ymd(state.today));
+  const diff = Math.round((today - weekStart) / 86400000);
+  return Math.min(6, Math.max(0, diff));
+}
+
+function formatWeekDate(date) {
+  return new Intl.DateTimeFormat(state.language === 'ko' ? 'ko-KR' : 'en-US', {
+    timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric',
+  }).format(date);
+}
+
+function dailyLabel(index, date) {
+  const base = `${formatWeekDate(date)} ${dayLabels()[index]}`;
+  const todayKey = ymd(state.today);
+  const dateKey = ymd(date);
+  return dateKey === todayKey ? `${base} · ${t('todayBadge')}` : base;
+}
+
+
+function findParashaForDate(items, date) {
+  const day = dateAtSeoulMidnight(ymd(date));
+  const parashot = (items || [])
+    .filter((item) => item.category === 'parashat')
+    .map((item) => ({ ...item, dateObject: dateAtSeoulMidnight(item.date) }))
+    .sort((a, b) => a.dateObject - b.dateObject);
+
+  return parashot.find((item) => item.dateObject >= day) || null;
+}
+
+function readingForDate(items, date) {
+  const parasha = findParashaForDate(items, date);
+  const leyning = parasha?.leyning || {};
+  const nt = mapNtReading(parasha?.title || '');
+  const weekStart = parasha?.date ? addDays(dateAtSeoulMidnight(parasha.date), -6) : dateAtSeoulMidnight(ymd(date));
+  const index = Math.min(6, Math.max(0, Math.round((dateAtSeoulMidnight(ymd(date)) - weekStart) / 86400000)));
+  const torahDays = getDailyTorahReadings(leyning);
+  const torah = torahDays[index] || (index === 0 ? leyning.torah : '') || '';
+  const ntText = getDailyNtForDate(nt, index, date);
+  const haftarah = index === 6 ? (leyning.haftarah || '') : '';
+  return { parasha, torah, ntText, haftarah };
+}
+
+function calendarWeekdayLabels() {
+  return state.language === 'ko'
+    ? ['주일', '월', '화', '수', '목', '금', '토']
+    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+}
+
+function compactReference(ref = '') {
+  const translated = translateReference(ref);
+  if (!translated || translated === '-') return '';
+  return translated;
+}
+
+
+function holidayListForDate(items, date) {
+  const key = ymd(date);
+  return (items || []).filter((item) => item.date?.startsWith(key) && ['holiday', 'roshchodesh'].includes(item.category));
+}
+
+function startOfWeek(date) {
+  const d = dateAtSeoulMidnight(ymd(date));
+  return addDays(d, -d.getDay());
+}
+
+function getMonthRange(date) {
+  const first = new Date(date.getFullYear(), date.getMonth(), 1);
+  const last = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  return { first: dateAtSeoulMidnight(ymd(first)), last: dateAtSeoulMidnight(ymd(last)) };
+}
+
+function renderHolidayStrip(items, rangeStart, rangeEnd, emptyKey) {
+  if (!els.weeklyHolidayStrip) return;
+  const holidays = (items || [])
+    .filter((item) => ['holiday', 'roshchodesh'].includes(item.category))
+    .map((item) => ({ ...item, dateObject: dateAtSeoulMidnight(item.date) }))
+    .filter((item) => item.dateObject >= rangeStart && item.dateObject <= rangeEnd)
+    .sort((a, b) => a.dateObject - b.dateObject);
+
+  if (!holidays.length) {
+    els.weeklyHolidayStrip.innerHTML = `<p class="weekly-holiday-empty">${t(emptyKey)}</p>`;
+    return;
+  }
+
+  els.weeklyHolidayStrip.innerHTML = holidays.map((holiday) => `
+    <div class="weekly-holiday-pill">
+      <span>${formatWeekDate(holiday.dateObject)}</span>
+      <strong>${translateEventTitle(holiday.title)}</strong>
+    </div>
+  `).join('');
+}
+
+function syncViewModeUi() {
+  const isCalendar = state.viewMode === 'calendar';
+  if (els.weekViewButton) els.weekViewButton.classList.toggle('active', !isCalendar);
+  if (els.calendarViewButton) els.calendarViewButton.classList.toggle('active', isCalendar);
+  if (els.readingViewHelp) els.readingViewHelp.textContent = isCalendar ? t('calendarReadingHelp') : t('weeklyReadingHelp');
+  if (els.holidayScopeTitle) els.holidayScopeTitle.textContent = isCalendar ? t('monthlyHolidaysTitle') : t('weeklyHolidaysTitle');
+  if (els.prevWeekButton) els.prevWeekButton.textContent = isCalendar ? t('prevMonth') : t('prevWeek');
+  if (els.thisWeekButton) els.thisWeekButton.textContent = isCalendar ? t('thisMonth') : t('thisWeek');
+  if (els.nextWeekButton) els.nextWeekButton.textContent = isCalendar ? t('nextMonth') : t('nextWeek');
+}
+
+function renderWeeklyView(items) {
+  const weekStart = startOfWeek(state.viewDate);
+  const weekEnd = addDays(weekStart, 6);
+  const todayKey = ymd(state.today);
+
+  renderHolidayStrip(items, weekStart, weekEnd, 'noWeeklyHoliday');
+
+  const list = document.createElement('div');
+  list.className = 'weekly-calendar-list';
+
+  for (let index = 0; index < 7; index += 1) {
+    const date = addDays(weekStart, index);
+    const dateKey = ymd(date);
+    const isToday = dateKey === todayKey;
+    const dayCard = document.createElement('article');
+    dayCard.className = `weekly-day-card${isToday ? ' is-today' : ''}`;
+
+    const { torah, ntText, haftarah } = readingForDate(items, date);
+    const holidays = holidayListForDate(items, date);
+    const holidayTags = holidays.map((holiday) => `<span class="holiday-tag">${translateEventTitle(holiday.title)}</span>`).join('');
+    const lines = [];
+    if (torah) lines.push(`<p><strong>${t('dailyTorah')}</strong><span>${compactReference(torah)}</span></p>`);
+    if (ntText) lines.push(`<p><strong>${t('dailyNt')}</strong><span>${compactReference(ntText)}</span></p>`);
+    if (haftarah) lines.push(`<p><strong>${t('dailyHaftarah')}</strong><span>${compactReference(haftarah)}</span></p>`);
+
+    dayCard.innerHTML = `
+      <div class="weekly-day-head">
+        <div>
+          <p class="weekly-day-name">${dayLabels()[index]}</p>
+          <p class="weekly-day-date">${formatWeekDate(date)}</p>
+        </div>
+        ${isToday ? `<span class="today-chip big">${t('todayBadge')}</span>` : ''}
+      </div>
+      ${holidayTags ? `<div class="holiday-tags">${holidayTags}</div>` : ''}
+      <div class="weekly-readings">${lines.length ? lines.join('') : `<p class="muted-line">${t('noDailyReading')}</p>`}</div>
+    `;
+    list.append(dayCard);
+  }
+
+  els.readingCalendar.append(list);
+}
+
+function renderMonthlyCalendarView(items) {
+  const { first, last } = getMonthRange(state.viewDate);
+  const gridStart = addDays(first, -first.getDay());
+  const gridEnd = addDays(last, 6 - last.getDay());
+  const todayKey = ymd(state.today);
+  const viewMonth = state.viewDate.getMonth();
+
+  renderHolidayStrip(items, first, last, 'noMonthlyHoliday');
+
+  const wrap = document.createElement('div');
+  wrap.className = 'monthly-calendar-scroll';
+
+  const monthTitle = document.createElement('p');
+  monthTitle.className = 'monthly-view-title';
+  monthTitle.textContent = new Intl.DateTimeFormat(state.language === 'ko' ? 'ko-KR' : 'en-US', {
+    timeZone: 'Asia/Seoul', year: 'numeric', month: 'long',
+  }).format(state.viewDate);
+  wrap.append(monthTitle);
+
+  const weekdays = document.createElement('div');
+  weekdays.className = 'calendar-weekdays';
+  weekdays.innerHTML = calendarWeekdayLabels().map((label) => `<span>${label}</span>`).join('');
+  wrap.append(weekdays);
+
+  const grid = document.createElement('div');
+  grid.className = 'calendar-grid monthly-grid';
+
+  let cursor = gridStart;
+  while (cursor <= gridEnd) {
+    const date = new Date(cursor.getTime());
+    const dateKey = ymd(date);
+    const isToday = dateKey === todayKey;
+    const isMuted = date.getMonth() !== viewMonth;
+    const cell = document.createElement('article');
+    cell.className = `calendar-cell${isToday ? ' is-today' : ''}${isMuted ? ' muted-month' : ''}`;
+
+    const { torah, ntText, haftarah } = readingForDate(items, date);
+    const holidays = holidayListForDate(items, date);
+    const holidayText = holidays.slice(0, 2).map((holiday) => translateEventTitle(holiday.title)).join(' · ');
+    const lines = [];
+    if (torah) lines.push(`<p><strong>${t('dailyTorah')}</strong>${compactReference(torah)}</p>`);
+    if (ntText) lines.push(`<p><strong>${t('dailyNt')}</strong>${compactReference(ntText)}</p>`);
+    if (haftarah) lines.push(`<p><strong>${t('dailyHaftarah')}</strong>${compactReference(haftarah)}</p>`);
+
+    cell.innerHTML = `
+      <div class="calendar-date-row">
+        <span class="calendar-date-number">${date.getDate()}</span>
+        ${isToday ? `<span class="today-chip">${t('todayBadge')}</span>` : ''}
+      </div>
+      ${holidayText ? `<p class="calendar-holiday">${holidayText}</p>` : ''}
+      <div class="calendar-readings">${lines.length ? lines.join('') : ''}</div>
+    `;
+    grid.append(cell);
+    cursor = addDays(cursor, 1);
+  }
+
+  wrap.append(grid);
+  els.readingCalendar.append(wrap);
+}
+
+function renderReadingCalendar(items) {
+  if (!els.readingCalendar) return;
+  els.readingCalendar.innerHTML = '';
+  syncViewModeUi();
+  if (state.viewMode === 'calendar') {
+    renderMonthlyCalendarView(items);
+  } else {
+    renderWeeklyView(items);
+  }
+}
+
+function renderReading(parasha) {
+  const title = parasha?.title || '-';
+  const leyning = parasha?.leyning || {};
+  const nt = mapNtReading(title);
+  const dailyIndex = getDailyIndex(parasha);
+  const torahDays = getDailyTorahReadings(leyning);
+  const todayTorah = torahDays[dailyIndex] || (dailyIndex === 0 ? leyning.torah : '') || '';
+  const todayNt = getDailyNtForDate(nt, dailyIndex, state.today);
+  const haftarah = leyning.haftarah || '';
+
+  els.parashaTitle.innerHTML = title !== '-' ? renderParashaTitle(title) : '-';
+  els.torahRef.textContent = todayTorah ? translateReference(todayTorah) : t('noDailyReading');
+  els.ntRef.textContent = todayNt ? translateReference(todayNt) : t('notMapped');
+  els.ntNote.textContent = state.language === 'ko' ? (nt?.noteKo || t('defaultNote')) : (nt?.noteEn || t('defaultNote'));
+
+  if (els.sabbathReadingBlock) {
+    const isSaturday = dailyIndex === 6;
+    els.sabbathReadingBlock.hidden = !(isSaturday && haftarah);
+  }
+  els.haftarahRef.textContent = haftarah ? translateReference(haftarah) : '-';
+  // 월간 달력 렌더링은 loadToday()에서 전체 달력 데이터로 처리합니다.
+}
+
+async function loadToday() {
+  applyLanguage();
+  els.statusCard.hidden = false;
+  els.statusText.textContent = t('loading');
+  els.gregorianDate.textContent = formatGregorian(state.today);
+
+  try {
+    await loadNtPlan();
+    const [converter, todayCalendar, viewItems] = await Promise.all([
+      fetchJson(converterUrl()),
+      fetchJson(hebcalUrlFor(state.today)),
+      fetchCalendarBundle(state.viewDate),
+    ]);
+
+    els.hebrewDate.textContent = formatHebrewDate(converter);
+
+    const todayItems = eventsForToday(todayCalendar.items || []);
+    const parasha = findParasha(todayCalendar.items || []);
+    renderReading(parasha);
+    renderHolidayList(todayItems);
+    renderMonthEvents(todayCalendar.items || []);
+    renderReadingCalendar(viewItems || []);
+    els.statusCard.hidden = true;
+  } catch (error) {
+    console.error(error);
+    els.hebrewDate.textContent = '-';
+    renderReading(null);
+    renderHolidayList([]);
+    els.monthEvents.innerHTML = '';
+    renderReadingCalendar([]);
+    els.statusCard.hidden = false;
+    els.statusText.textContent = t('offline');
+  }
+}
+
+if (els.prevWeekButton) {
+  els.prevWeekButton.addEventListener('click', () => {
+    state.viewDate = state.viewMode === 'calendar'
+      ? new Date(state.viewDate.getFullYear(), state.viewDate.getMonth() - 1, 1)
+      : addDays(state.viewDate, -7);
+    loadToday();
+  });
+}
+
+if (els.thisWeekButton) {
+  els.thisWeekButton.addEventListener('click', () => {
+    state.viewDate = new Date(state.today.getTime());
+    loadToday();
+  });
+}
+
+if (els.nextWeekButton) {
+  els.nextWeekButton.addEventListener('click', () => {
+    state.viewDate = state.viewMode === 'calendar'
+      ? new Date(state.viewDate.getFullYear(), state.viewDate.getMonth() + 1, 1)
+      : addDays(state.viewDate, 7);
+    loadToday();
+  });
+}
+
+if (els.weekViewButton) {
+  els.weekViewButton.addEventListener('click', () => {
+    state.viewMode = 'week';
+    localStorage.setItem('viewMode', state.viewMode);
+    loadToday();
+  });
+}
+
+if (els.calendarViewButton) {
+  els.calendarViewButton.addEventListener('click', () => {
+    state.viewMode = 'calendar';
+    localStorage.setItem('viewMode', state.viewMode);
+    loadToday();
+  });
+}
+
+els.languageToggle.addEventListener('click', () => {
+  state.language = state.language === 'ko' ? 'en' : 'ko';
+  localStorage.setItem('language', state.language);
+  loadToday();
+});
+
+els.refreshButton.addEventListener('click', loadToday);
+
+if (location.protocol !== 'file:' && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => location.protocol !== 'file:' && navigator.serviceWorker.register('./service-worker.js'));
+}
+
+loadToday();
+
+    </script>
+  
+<script>
+(function () {
+  function $(selector) { return document.querySelector(selector); }
+
+  function openDrawer() {
+    var drawer = $('#sideDrawer');
+    var overlay = $('#drawerOverlay');
+    var button = $('#menuButton');
+    if (!drawer || !overlay) return;
+    overlay.hidden = false;
+    drawer.classList.add('is-open');
+    overlay.classList.add('is-open');
+    drawer.setAttribute('aria-hidden', 'false');
+    if (button) button.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('drawer-lock');
+  }
+
+  function closeDrawer() {
+    var drawer = $('#sideDrawer');
+    var overlay = $('#drawerOverlay');
+    var button = $('#menuButton');
+    if (!drawer || !overlay) return;
+    drawer.classList.remove('is-open');
+    overlay.classList.remove('is-open');
+    drawer.setAttribute('aria-hidden', 'true');
+    if (button) button.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('drawer-lock');
+    setTimeout(function () { overlay.hidden = true; }, 180);
+  }
+
+  function openDetail(item) {
+    var sheet = $('#readingDetailSheet');
+    var overlay = $('#detailOverlay');
+    if (!sheet || !overlay || !item) return;
+
+    var label = item.querySelector('.label') ? item.querySelector('.label').textContent.trim() : '본문';
+    var ref = item.querySelector('.reference') ? item.querySelector('.reference').textContent.trim() : '-';
+    var note = item.querySelector('.note') ? item.querySelector('.note').textContent.trim() : '';
+
+    $('#detailLabel').textContent = label;
+    $('#detailTitle').textContent = label;
+    $('#detailReference').textContent = ref || '-';
+    $('#detailNote').textContent = note || '1단계에서는 성경 본문 전체가 아니라 읽기 범위만 표시합니다. 다음 단계에서 성경 본문 표시 방식을 별도로 정리합니다.';
+
+    overlay.hidden = false;
+    sheet.classList.add('is-open');
+    overlay.classList.add('is-open');
+    sheet.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('drawer-lock');
+  }
+
+  function closeDetail() {
+    var sheet = $('#readingDetailSheet');
+    var overlay = $('#detailOverlay');
+    if (!sheet || !overlay) return;
+    sheet.classList.remove('is-open');
+    overlay.classList.remove('is-open');
+    sheet.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('drawer-lock');
+    setTimeout(function () { overlay.hidden = true; }, 180);
+  }
+
+  document.addEventListener('click', function (event) {
+    if (event.target.closest('#menuButton')) openDrawer();
+    if (event.target.closest('#drawerCloseButton') || event.target.closest('#drawerOverlay') || event.target.closest('[data-drawer-link]')) closeDrawer();
+    if (event.target.closest('#detailCloseButton') || event.target.closest('#detailOverlay')) closeDetail();
+
+    var reading = event.target.closest('.clickable-reading');
+    if (reading) openDetail(reading);
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+      closeDrawer();
+      closeDetail();
+    }
+    if ((event.key === 'Enter' || event.key === ' ') && event.target.classList && event.target.classList.contains('clickable-reading')) {
+      event.preventDefault();
+      openDetail(event.target);
+    }
+  });
+})();
+</script>
+
+  
+<script>
+(function () {
+  function normalizeHash(hash) {
+    return hash || '#home';
+  }
+
+  function setActiveNavigation(targetHash) {
+    var hash = normalizeHash(targetHash);
+    document.querySelectorAll('.bottom-tab').forEach(function (tab) {
+      tab.classList.toggle('is-active', normalizeHash(tab.getAttribute('href')) === hash);
+    });
+    document.querySelectorAll('.menu-link').forEach(function (link) {
+      link.classList.toggle('is-active', normalizeHash(link.getAttribute('href')) === hash);
+    });
+  }
+
+  function nearestSectionHash() {
+    var sections = ['#home', '#calendar-section', '#about', '#usage', '#terms', '#copyright'];
+    var best = '#home';
+    var bestDistance = Infinity;
+
+    sections.forEach(function (hash) {
+      var el = document.querySelector(hash);
+      if (!el) return;
+      var rect = el.getBoundingClientRect();
+      var distance = Math.abs(rect.top - 90);
+      if (rect.top <= window.innerHeight * 0.65 && distance < bestDistance) {
+        best = hash;
+        bestDistance = distance;
+      }
+    });
+
+    return best;
+  }
+
+  document.addEventListener('click', function (event) {
+    var tab = event.target.closest('.bottom-tab, .menu-link, .drawer-menu a');
+    if (!tab) return;
+    var href = tab.getAttribute('href');
+    if (href && href.charAt(0) === '#') {
+      setActiveNavigation(href);
+    }
+  });
+
+  window.addEventListener('hashchange', function () {
+    setActiveNavigation(location.hash || '#home');
+  });
+
+  var ticking = false;
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(function () {
+      setActiveNavigation(nearestSectionHash());
+      ticking = false;
+    });
+  }, { passive: true });
+
+  setActiveNavigation(location.hash || '#home');
+})();
+</script>
+
+  
+<script>
+(function () {
+  var drawerTexts = {
+    ko: {
+      drawerTitle: '유대력 성경 달력',
+      drawerLinkHome: '오늘의 본문',
+      drawerLinkCalendar: '말씀 달력',
+      drawerLinkAbout: '앱 설명',
+      drawerLinkUsage: '사용 방법',
+      drawerLinkTerms: '용어 설명',
+      drawerLinkCopyright: '저작권 설명',
+      drawerNote: '처음 사용하는 분도 길을 잃지 않도록, 필요한 설명을 메뉴에 미리 담아두었습니다.',
+      bottomTabCalendarLabel: '달력 보기'
+    },
+    en: {
+      drawerTitle: 'Jewish Bible Calendar',
+      drawerLinkHome: "Today's Text",
+      drawerLinkCalendar: 'Reading Calendar',
+      drawerLinkAbout: 'About',
+      drawerLinkUsage: 'How to Use',
+      drawerLinkTerms: 'Terms',
+      drawerLinkCopyright: 'Copyright',
+      drawerNote: 'Helpful information is placed in the menu in advance so that first-time users do not feel lost.',
+      bottomTabCalendarLabel: 'Calendar View'
+    }
+  };
+
+  function currentLang() {
+    var htmlLang = document.documentElement.getAttribute('lang') || 'ko';
+    return htmlLang.toLowerCase().indexOf('en') === 0 ? 'en' : 'ko';
+  }
+
+  function applyDrawerLanguage() {
+    var lang = currentLang();
+    var pack = drawerTexts[lang];
+    if (!pack) return;
+    Object.keys(pack).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = pack[id];
+    });
+  }
+
+  document.addEventListener('click', function (event) {
+    if (event.target.closest('#languageToggle')) {
+      setTimeout(applyDrawerLanguage, 80);
+    }
+  });
+
+  window.addEventListener('load', applyDrawerLanguage);
+  setTimeout(applyDrawerLanguage, 120);
+})();
+</script>
+
   </body>
 </html>

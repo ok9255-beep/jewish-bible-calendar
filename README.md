@@ -1,23 +1,14 @@
-# 유대력 성경 달력
+# 유대력 성경 달력 PWA v3 single-file-safe
 
-유대력 절기와 날짜별 성경 읽기 범위를 함께 보여주는 모바일 PWA 성경 달력 앱입니다.
+GitHub Pages에서 CSS/JS가 빠져 글자만 보이는 문제를 피하기 위해,
+핵심 CSS와 JavaScript를 index.html 안에 함께 넣은 안전 버전입니다.
 
-## 실행
+## 업로드 방법
 
-```bash
-python -m http.server 8080
-```
+GitHub 저장소에서 `Add file → Upload files`를 누른 뒤,
+이 폴더 안의 파일과 폴더 전체를 다시 업로드하세요.
 
-```text
-http://localhost:8080
-```
+업로드 후 커밋 메시지:
+`Fix GitHub Pages display with single-file safe version`
 
-## 공개 배포
-
-`DEPLOY.md`를 참고하세요.
-
-## 데이터/출처
-
-- 유대력/절기 데이터: Hebcal API
-- 신약 연결 읽기: Stage 1 샘플 데이터
-- 성경 본문 전체: Stage 1에는 포함하지 않음
+그 다음 앱 주소에서 Ctrl + F5로 강력 새로고침하세요.
