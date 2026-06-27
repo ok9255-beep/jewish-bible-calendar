@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b2a52" />
+    <meta name="description" content="유대력 절기와 날짜별 성경 읽기 범위를 함께 보여주는 모바일 PWA 성경 달력 앱입니다." />
+    <title>유대력 성경 달력</title>
+  
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./assets/icon-192.png" />
+    <link rel="stylesheet" href="./src/styles.css?v=public-v1" />
+  </head>
+  <body>
+    <noscript>이 앱을 사용하려면 JavaScript가 필요합니다.</noscript>
+
+    <div class="app-shell">
+      <header class="app-header" id="home">
+        <div class="top-bar">
+          <button id="menuButton" class="icon-button" type="button" aria-label="메뉴 열기" aria-expanded="false">☰</button>
+          <div class="title-block">
+            <p class="eyebrow" data-i18n="eyebrow">Jewish Bible Calendar</p>
+            <h1 data-i18n="appTitle">유대력 성경 달력</h1>
+          </div>
+          <div class="header-actions">
+            <button id="languageToggle" class="language-button" type="button" aria-label="언어 변경">EN</button>
+          </div>
+        </div>
+
+        <section class="summary-grid" aria-live="polite">
+          <article class="summary-card summary-card--left">
+            <span class="summary-icon">📅</span>
+            <div class="summary-copy">
+              <p class="summary-label">Gregorian</p>
+              <p id="gregorianDate" class="summary-value">-</p>
+            </div>
+          </article>
+          <article class="summary-card summary-card--right">
+            <span class="summary-icon">✡</span>
+            <div class="summary-copy">
+              <p class="summary-label" data-i18n="guideJewishCalendarTitle">유대력</p>
+              <p id="hebrewDate" class="summary-value summary-value--hebrew">-</p>
+              <p id="regionLabel" class="region-label" hidden></p>
+            </div>
+          </article>
+        </section>
+      </header>
+
+      <nav class="menu-bar" aria-label="앱 메뉴">
+        <a class="menu-link" href="#home" data-i18n="menuToday">오늘</a>
+        <a class="menu-link" href="#calendar-section" data-i18n="calendarView">달력으로 보기</a>
+        <a class="menu-link" href="#about" data-i18n="menuAbout">앱 설명</a>
+        <a class="menu-link" href="#terms" data-i18n="menuTerms">용어</a>
+        <a class="menu-link" href="#copyright" data-i18n="menuCopyright">저작권</a>
+      </nav>
+
+      <main>
+        <section class="status-card" id="statusCard">
+          <span class="status-dot"></span>
+          <p id="statusText" data-i18n="loading">절기와 성경 읽기 정보를 불러오는 중입니다...</p>
+        </section>
+
+        <section class="panel hero-panel">
+          <div class="section-heading-row">
+            <div>
+              <p class="section-kicker" data-i18n="todayReading">오늘의 본문</p>
+              <h2 class="section-title">Featured Portion</h2>
+            </div>
+            <button id="refreshButton" class="outline-button" type="button" data-i18n="refresh">새로고침</button>
+          </div>
+
+          <div class="portion-hero">
+            <div class="portion-overlay">
+              <div id="parashaTitle" class="week-portion">-</div>
+            </div>
+          </div>
+
+          <div class="reading-stack">
+            <article class="reading-item reading-item--torah clickable-reading" role="button" tabindex="0" data-reading-kind="torah">
+              <div class="reading-icon">📜</div>
+              <div class="reading-copy">
+                <p class="label" data-i18n="torah">모세오경 읽기</p>
+                <p id="torahRef" class="reference">-</p>
+              </div>
+              <span class="chevron">›</span>
+            </article>
+
+            <article class="reading-item reading-item--nt accent clickable-reading" role="button" tabindex="0" data-reading-kind="nt">
+              <div class="reading-icon">✝</div>
+              <div class="reading-copy">
+                <p class="label" data-i18n="ntFulfillment">신약 연결 읽기</p>
+                <p id="ntRef" class="reference">-</p>
+                <p id="ntNote" class="note">-</p>
+              </div>
+              <span class="chevron">›</span>
+            </article>
+
+            <article id="sabbathReadingBlock" class="reading-item reading-item--prophets soft clickable-reading" role="button" tabindex="0" data-reading-kind="prophets" hidden>
+              <div class="reading-icon">📯</div>
+              <div class="reading-copy">
+                <p class="label" data-i18n="sabbathReadingTitle">토요일 선지서 읽기</p>
+                <p id="haftarahRef" class="reference">-</p>
+              </div>
+              <span class="chevron">›</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel calendar-panel" id="calendar-section">
+          <div class="section-heading-row section-heading-row--stack">
+            <div>
+              <p class="section-kicker" data-i18n="monthlyReadingTitle">말씀 달력</p>
+              <h2 class="section-title">Reading Calendar</h2>
+            </div>
+            <div class="week-nav" aria-label="주간 이동">
+              <button id="prevWeekButton" class="mini-button" type="button" data-i18n="prevWeek">이전 주</button>
+              <button id="thisWeekButton" class="mini-button primary" type="button" data-i18n="thisWeek">이번 주</button>
+              <button id="nextWeekButton" class="mini-button" type="button" data-i18n="nextWeek">다음 주</button>
+            </div>
+          </div>
+
+          <div class="view-switch-wrap">
+            <div class="segmented-control" aria-label="보기 방식 선택">
+              <button id="weekViewButton" class="segment-button active" type="button" data-i18n="weekView">주간 보기</button>
+              <button id="calendarViewButton" class="segment-button" type="button" data-i18n="calendarView">달력으로 보기</button>
+            </div>
+          </div>
+
+          <p id="readingViewHelp" class="term-explain" data-i18n="weeklyReadingHelp">모바일 화면에서는 주간 보기를 기본으로 사용합니다. 달력으로 보기를 누르면 절기와 본문을 한 달 달력에서 함께 볼 수 있습니다.</p>
+
+          <div class="holiday-summary-box">
+            <p id="holidayScopeTitle" class="weekly-holiday-title" data-i18n="weeklyHolidaysTitle">이번 주 유대 절기</p>
+            <div id="weeklyHolidayStrip" class="weekly-holiday-strip"></div>
+          </div>
+
+          <div id="readingCalendar" class="reading-calendar" aria-label="날짜별 성경 읽기 달력"></div>
+        </section>
+
+        <section class="panel split-panel">
+          <div>
+            <p class="section-kicker" data-i18n="holidays">오늘의 절기와 기념일</p>
+            <h2 class="section-title">Jewish Holidays</h2>
+            <ul id="holidayList" class="holiday-list"></ul>
+          </div>
+          <div>
+            <p class="section-kicker" data-i18n="monthPreview">이번 달 유대력 미리보기</p>
+            <h2 class="section-title">Monthly Preview</h2>
+            <div id="monthEvents" class="event-list"></div>
+          </div>
+        </section>
+
+        <section id="about" class="panel info-card">
+          <p class="small-eyebrow" data-i18n="aboutEyebrow">앱 설명</p>
+          <h2 data-i18n="aboutTitle">왜 이 앱이 필요한가</h2>
+          <p class="info-text" data-i18n="aboutBody1">성경의 많은 사건과 절기는 유대력이라는 시간의 강 위에서 흘러갑니다. 이 앱은 한국 달력의 날짜 위에 유대 절기와 성경 읽기 본문을 함께 올려, 오늘 무엇을 읽어야 하는지 쉽게 보도록 돕습니다.</p>
+        </section>
+
+        <section id="usage" class="panel info-card">
+          <p class="small-eyebrow" data-i18n="usageEyebrow">사용 방법</p>
+          <h2 data-i18n="usageTitle">이렇게 사용하세요</h2>
+          <ol class="simple-steps">
+            <li data-i18n="usageStep1">상단에서 오늘 날짜와 유대력 날짜를 확인합니다.</li>
+            <li data-i18n="usageStep2">“오늘의 본문”에서 모세오경 읽기와 신약 연결 읽기를 읽습니다.</li>
+            <li data-i18n="usageStep3">“주간 보기”는 모바일에서 선명하게 읽을 때 사용합니다.</li>
+            <li data-i18n="usageStep4">“달력으로 보기”는 한 달의 절기와 본문 흐름을 함께 볼 때 사용합니다.</li>
+            <li data-i18n="usageStep5">낯선 말은 아래 “용어 설명”에서 확인합니다.</li>
+          </ol>
+        </section>
+
+        <section id="terms" class="panel guide-card compact-terms">
+          <h2 data-i18n="termGuideTitle">용어 설명</h2>
+          <dl class="term-list">
+            <div>
+              <dt data-i18n="guideJewishCalendarTitle">유대력</dt>
+              <dd data-i18n="guideJewishCalendarBody">성경 절기와 유대 전통의 날짜를 계산할 때 사용하는 달력입니다. 양력과 달라서 절기 날짜가 해마다 조금씩 바뀝니다.</dd>
+            </div>
+            <div>
+              <dt data-i18n="guideHolidayTitle">유대 절기</dt>
+              <dd data-i18n="guideHolidayBody">유월절, 무교절, 오순절, 나팔절, 속죄일, 장막절처럼 성경과 유대 전통에서 중요한 날입니다.</dd>
+            </div>
+            <div>
+              <dt data-i18n="guideTorahTitle">모세오경 읽기</dt>
+              <dd data-i18n="guideTorahBody">창세기부터 신명기까지의 말씀을 날짜별로 나누어 읽는 부분입니다. 전통 용어로는 토라라고 부릅니다.</dd>
+            </div>
+            <div>
+              <dt data-i18n="guideNtTitle">신약 연결 읽기</dt>
+              <dd data-i18n="guideNtBody">모세오경의 흐름과 연결하여 신약을 함께 읽는 부분입니다. 최종 버전에서는 1년 안에 신약 전체를 읽도록 정교하게 배정합니다.</dd>
+            </div>
+            <div>
+              <dt data-i18n="guideHaftarahTitle">토요일 선지서 읽기</dt>
+              <dd data-i18n="guideHaftarahBody">유대 전통에서 토요일에 함께 읽는 선지서/역사서 본문입니다. 전통 용어로는 하프타라라고 부릅니다.</dd>
+            </div>
+            <div>
+              <dt data-i18n="guideTraditionalNameTitle">전통 이름</dt>
+              <dd data-i18n="guideTraditionalNameBody">고라, 후카트, 발락처럼 매주 읽는 모세오경 구간에 붙은 이름입니다. 앱에서는 쉬운 제목을 먼저 보여주고 전통 이름은 보조로 표시합니다.</dd>
+            </div>
+            <div>
+              <dt data-i18n="guideRoshTitle">새 달의 첫날</dt>
+              <dd data-i18n="guideRoshBody">유대력에서 새 달이 시작되는 날입니다. 전통 용어로는 월삭 또는 로쉬 호데쉬라고 부릅니다.</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section id="copyright" class="panel info-card copyright-card">
+          <p class="small-eyebrow" data-i18n="copyrightEyebrow">저작권 설명</p>
+          <h2 data-i18n="copyrightTitle">출처와 사용 범위</h2>
+          <div class="copyright-list">
+            <p data-i18n="copyrightBody1">유대력과 절기 데이터는 Hebcal API를 사용하며, 앱 하단에 출처를 표시합니다.</p>
+            <p data-i18n="copyrightBody2">영어 성경 본문은 King James Version(KJV)을 기준으로 연결할 예정입니다.</p>
+            <p data-i18n="copyrightBody3">한국어 성경 본문은 1단계에서 본문 전체가 아니라 읽기 범위만 표시합니다.</p>
+          </div>
+        </section>
+      </main>
+
+
+      <div id="drawerOverlay" class="drawer-overlay" hidden></div>
+      <aside id="sideDrawer" class="side-drawer" aria-label="앱 메뉴" aria-hidden="true">
+        <div class="drawer-head">
+          <div>
+            <p id="drawerEyebrow" class="small-eyebrow">Menu</p>
+            <h2 id="drawerTitle">유대력 성경 달력</h2>
+          </div>
+          <button id="drawerCloseButton" class="drawer-close" type="button" aria-label="메뉴 닫기">×</button>
+        </div>
+        <nav class="drawer-menu">
+          <a id="drawerLinkHome" href="#home" data-drawer-link>오늘의 본문</a>
+          <a id="drawerLinkCalendar" href="#calendar-section" data-drawer-link>말씀 달력</a>
+          <a id="drawerLinkAbout" href="#about" data-drawer-link>앱 설명</a>
+          <a id="drawerLinkUsage" href="#usage" data-drawer-link>사용 방법</a>
+          <a id="drawerLinkTerms" href="#terms" data-drawer-link>용어 설명</a>
+          <a id="drawerLinkCopyright" href="#copyright" data-drawer-link>저작권 설명</a>
+        </nav>
+        <p id="drawerNote" class="drawer-note">처음 사용하는 분도 길을 잃지 않도록, 필요한 설명을 메뉴에 미리 담아두었습니다.</p>
+      </aside>
+
+      <div id="detailOverlay" class="detail-overlay" hidden></div>
+      <section id="readingDetailSheet" class="detail-sheet" aria-hidden="true" aria-label="본문 상세 보기">
+        <div class="detail-handle"></div>
+        <div class="detail-head">
+          <div>
+            <p id="detailLabel" class="small-eyebrow">본문</p>
+            <h2 id="detailTitle">-</h2>
+          </div>
+          <button id="detailCloseButton" class="drawer-close" type="button" aria-label="닫기">×</button>
+        </div>
+        <p id="detailReference" class="detail-reference">-</p>
+        <p id="detailNote" class="detail-note">1단계에서는 성경 본문 전체가 아니라 읽기 범위만 표시합니다. 다음 단계에서 성경 본문 표시 방식을 별도로 정리합니다.</p>
+      </section>
+
+      <footer class="app-footer">
+        <p style="font-size:0.68rem; opacity:.75; margin-bottom:6px;">Stylish UI v2</p>
+        <p data-i18n="footerRights">
+          유대력/절기 데이터: Hebcal API, CC BY 4.0. 영어 성경 본문 예정: King James Version(KJV). 한국어 성경 본문은 1단계에서 범위만 표시합니다.
+        </p>
+      </footer>
+
+      <nav class="bottom-tabs" aria-label="하단 메뉴">
+        <a href="#home" class="bottom-tab is-active"><span>⌂</span><small data-i18n="menuToday">오늘</small></a>
+        <a href="#calendar-section" class="bottom-tab"><span>▦</span><small id="bottomTabCalendarLabel">달력 보기</small></a>
+        <a href="#about" class="bottom-tab"><span>ℹ</span><small data-i18n="menuAbout">앱 설명</small></a>
+        <a href="#terms" class="bottom-tab"><span>✦</span><small data-i18n="menuTerms">용어</small></a>
+        <a href="#copyright" class="bottom-tab"><span>⚙</span><small data-i18n="menuCopyright">저작권</small></a>
+      </nav>
+    </div>
+
+      <script type="module" src="./src/app.js?v=public-v1"></script>
+  </body>
+</html>
