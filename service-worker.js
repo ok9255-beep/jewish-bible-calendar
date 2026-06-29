@@ -1,4 +1,4 @@
-const KILL_VERSION = 'jbc-v8-notes-fixed-20260628';
+const KILL_VERSION = 'jbc-v9-note-date-20260629';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

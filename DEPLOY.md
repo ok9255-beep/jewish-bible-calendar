@@ -1,9 +1,9 @@
-# 배포 방법 v8
+# 배포 방법 v9
 
 1. GitHub 저장소 `jewish-bible-calendar`로 이동
 2. Code → Add file → Upload files
 3. 이 폴더 안의 모든 파일/폴더 업로드
-4. Commit message: `Add visible meditation notes`
+4. Commit message: `Move note date to top right`
 5. Commit changes
 6. 1~3분 기다림
 7. 아래 주소에서 캐시 정리

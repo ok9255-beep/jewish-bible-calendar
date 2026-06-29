@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Jewish Bible Calendar v8 notes fixed visible -->
+<!-- Jewish Bible Calendar v9 note date top right -->
 <!-- Jewish Bible Calendar v6 service worker kill -->
 <html lang="ko">
   <head>
@@ -989,6 +989,32 @@ body.drawer-lock {
   }
 }
 
+
+/* v9 Note date top-right layout */
+.meditation-card .note-head {
+  margin-bottom: 13px;
+}
+.note-kicker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.note-kicker-row .small-eyebrow {
+  margin: 0;
+}
+.meditation-card .note-head h2 {
+  margin: 0;
+  font-size: 1.42rem;
+  letter-spacing: -0.04em;
+  line-height: 1.18;
+}
+.note-date-badge {
+  margin-left: auto;
+  transform: translateY(-1px);
+}
+
 </style>
     <title>유대력 성경 달력</title>
       <link rel="manifest" href="./manifest.webmanifest" />
@@ -1135,12 +1161,12 @@ body.drawer-lock {
 
         
         <section id="notes-section" class="panel meditation-card">
-          <div class="section-head row">
-            <div>
+          <div class="section-head note-head">
+            <div class="note-kicker-row">
               <p class="small-eyebrow">묵상 노트</p>
-              <h2>오늘의 묵상 메모</h2>
+              <span id="noteDateBadge" class="note-date-badge">오늘</span>
             </div>
-            <span id="noteDateBadge" class="note-date-badge">오늘</span>
+            <h2>오늘의 묵상 메모</h2>
           </div>
           <p id="noteHelp" class="note-help">오늘 말씀 앞에서 받은 마음, 질문, 기도, 적용할 한 가지를 적어보세요.</p>
           <textarea id="meditationNoteInput" class="meditation-textarea" rows="8" placeholder="오늘의 말씀을 읽으며 받은 마음을 자유롭게 기록하세요.

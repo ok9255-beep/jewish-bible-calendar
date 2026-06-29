@@ -1,13 +1,12 @@
-# Jewish Bible Calendar v8 - Notes Fixed Visible
+# Jewish Bible Calendar v9 - Note Date Top Right
 
-이번 버전은 묵상 노트가 반드시 화면에 보이도록 오늘의 본문 아래에 직접 삽입한 버전입니다.
-
-추가/수정:
-- 오늘의 묵상 메모 섹션 확실히 표시
-- 날짜별 localStorage 자동 저장
-- 저장 / 복사 / 삭제 버튼
-- 한국어/영어 버튼 문구 전환
+수정 내용:
+- 묵상 노트 날짜 배지를 상단 오른쪽으로 이동
+- 배치:
+  묵상 노트              6월 29일
+  오늘의 묵상 메모
+- 기존 묵상 메모 저장 / 복사 / 삭제 기능 유지
 - 기존 service worker 캐시 정리 구조 유지
 
-업로드 후 반드시:
+업로드 후:
 https://ok9255-beep.github.io/jewish-bible-calendar/reset-cache.html
