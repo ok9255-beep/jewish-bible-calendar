@@ -1,14 +1,11 @@
-# 유대력 성경 달력 PWA v3 single-file-safe
+# Jewish Bible Calendar PWA v4 - Portion Title Fix
 
-GitHub Pages에서 CSS/JS가 빠져 글자만 보이는 문제를 피하기 위해,
-핵심 CSS와 JavaScript를 index.html 안에 함께 넣은 안전 버전입니다.
+수정 내용:
+- `Featured Portion`을 한국어 모드에서 `오늘의 본문`으로 표시
+- `제목 Beha’alotcha`처럼 보이던 부분 수정
+- Beha’alotcha 같은 곡선 apostrophe(’)가 들어온 경우도 쉬운 한국어 제목으로 매칭
+- 본문 카드에서 `제목` 라벨 제거
+- 전통 이름은 작은 보조 줄로만 표시
+- 이전에 삭제 요청한 “쉬운 제목을 먼저 보여주고…” 설명 문구 정리
 
-## 업로드 방법
-
-GitHub 저장소에서 `Add file → Upload files`를 누른 뒤,
-이 폴더 안의 파일과 폴더 전체를 다시 업로드하세요.
-
-업로드 후 커밋 메시지:
-`Fix GitHub Pages display with single-file safe version`
-
-그 다음 앱 주소에서 Ctrl + F5로 강력 새로고침하세요.
+GitHub에는 이 폴더 안의 파일과 폴더를 저장소 root에 업로드하세요.

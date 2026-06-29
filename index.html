@@ -965,7 +965,7 @@ body.drawer-lock {
           <div class="section-heading-row">
             <div>
               <p class="section-kicker" data-i18n="todayReading">오늘의 본문</p>
-              <h2 class="section-title">Featured Portion</h2>
+              <h2 class="section-title" data-i18n="todayReading">오늘의 본문</h2>
             </div>
             <button id="refreshButton" class="outline-button" type="button" data-i18n="refresh">새로고침</button>
           </div>
@@ -1375,8 +1375,8 @@ const i18n = {
     guideNtTitle: '신약 연결 읽기',
     guideNtBody: '모세오경의 흐름과 연결하여 신약을 함께 읽는 부분입니다. 최종 버전에서는 1년 안에 신약 전체를 읽도록 정교하게 배정합니다.',
     guideTraditionalNameTitle: '전통 이름',
-    guideTraditionalNameBody: '고라, 후카트, 발락처럼 매주 읽는 모세오경 구간에 붙은 이름입니다. 앱에서는 쉬운 제목을 먼저 보여주고 전통 이름은 보조로 표시합니다.',
-    portionTitleLabel: '제목',
+    guideTraditionalNameBody: '매주 읽는 모세오경 구간에 붙은 전통 이름입니다.',
+    portionTitleLabel: '읽기 제목',
     traditionalNameLabel: '전통 이름',
     copyrightEyebrow: '저작권 설명',
     copyrightTitle: '출처와 사용 범위',
@@ -1463,8 +1463,8 @@ const i18n = {
     guideNtTitle: 'New Testament Connecting Reading',
     guideNtBody: 'A New Testament reading connected to the Torah flow. The final version will refine this plan so the entire New Testament is read within one year.',
     guideTraditionalNameTitle: 'Traditional Name',
-    guideTraditionalNameBody: 'Names such as Korach, Chukat, and Balak are traditional labels for weekly Torah portions. This app shows an easier title first and keeps the traditional name as a helper.',
-    portionTitleLabel: 'Title',
+    guideTraditionalNameBody: 'Traditional labels for weekly Torah portions.',
+    portionTitleLabel: 'Reading title',
     traditionalNameLabel: 'Traditional name',
     copyrightEyebrow: 'Copyright',
     copyrightTitle: 'Sources and usage',
@@ -1762,15 +1762,28 @@ function findParasha(items) {
   return futureParashot[0] || items.find((item) => item.category === 'parashat') || null;
 }
 
+function normalizeParashaKey(name = '') {
+  return String(name)
+    .replace(/^Parashat\s+/i, '')
+    .replace(/[’‘ʼ`]/g, "'")
+    .replace(/[–—]/g, '-')
+    .trim();
+}
+
+function displayParashaEnglish(name = '') {
+  return normalizeParashaKey(name).replace(/'/g, '’');
+}
+
 function mapNtReading(parashaTitle = '') {
-  const normalized = parashaTitle.replace(/^Parashat\s+/i, '').toLowerCase();
-  return state.ntPlan.find((row) => normalized.includes(row.parashaKey.toLowerCase()));
+  const normalized = normalizeParashaKey(parashaTitle).toLowerCase();
+  return state.ntPlan.find((row) => normalized.includes(normalizeParashaKey(row.parashaKey).toLowerCase()));
 }
 
 function translateParashaName(name = '', withPrefix = true) {
-  const clean = name.replace(/^Parashat\s+/i, '').trim();
+  const clean = normalizeParashaKey(name);
   const ko = parashaKo[clean] || clean.split('-').map((part) => parashaKo[part.trim()] || part.trim()).join('-');
-  return withPrefix ? `${t('parashaPrefix')}: ${ko} (${clean})` : ko;
+  const display = displayParashaEnglish(clean);
+  return withPrefix ? `${t('parashaPrefix')}: ${ko} (${display})` : ko;
 }
 
 function escapeHtml(value = '') {
@@ -1783,30 +1796,34 @@ function escapeHtml(value = '') {
 }
 
 function parashaTraditionalName(clean = '') {
-  if (!clean) return '';
-  if (state.language !== 'ko') return clean;
-  const ko = parashaKo[clean] || clean.split('-').map((part) => parashaKo[part.trim()] || part.trim()).join('-');
-  return `${ko} (${clean})`;
+  const key = normalizeParashaKey(clean);
+  if (!key) return '';
+  const display = displayParashaEnglish(key);
+  if (state.language !== 'ko') return display;
+  const ko = parashaKo[key] || key.split('-').map((part) => parashaKo[part.trim()] || part.trim()).join('-');
+  return `${ko} (${display})`;
 }
 
 function parashaSimpleTitleFor(clean = '') {
-  if (!clean) return '';
-  const exact = parashaSimpleTitle[clean];
+  const key = normalizeParashaKey(clean);
+  if (!key) return '';
+  const exact = parashaSimpleTitle[key];
   if (exact) return state.language === 'ko' ? exact.ko : exact.en;
-  const parts = clean.split('-').map((part) => part.trim()).filter(Boolean);
+  const parts = key.split('-').map((part) => part.trim()).filter(Boolean);
   const titles = parts.map((part) => parashaSimpleTitle[part]).filter(Boolean).map((item) => state.language === 'ko' ? item.ko : item.en);
   if (titles.length) return titles.join(state.language === 'ko' ? ', ' : ', ');
-  return state.language === 'ko' ? translateParashaName(clean, false) : clean;
+  return state.language === 'ko' ? translateParashaName(key, false) : displayParashaEnglish(key);
 }
 
 function renderParashaTitle(name = '') {
-  const clean = name.replace(/^Parashat\s+/i, '').trim();
+  const clean = normalizeParashaKey(name);
   if (!clean || clean === '-') return '-';
   const simple = parashaSimpleTitleFor(clean);
   const traditional = parashaTraditionalName(clean);
+  const showTraditional = traditional && traditional !== simple;
   return `
-    <span class="portion-main"><strong>${escapeHtml(t('portionTitleLabel'))}</strong> ${escapeHtml(simple)}</span>
-    <span class="portion-sub"><strong>${escapeHtml(t('traditionalNameLabel'))}</strong> ${escapeHtml(traditional)}</span>
+    <span class="portion-main">${escapeHtml(simple)}</span>
+    ${showTraditional ? `<span class="portion-sub"><strong>${escapeHtml(t('traditionalNameLabel'))}</strong> ${escapeHtml(traditional)}</span>` : ''}
   `;
 }
 
