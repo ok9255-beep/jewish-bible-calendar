@@ -1,5 +1,6 @@
 <!doctype html>
-<!-- Jewish Bible Calendar v7 meditation notes -->
+<!-- Jewish Bible Calendar v8 notes fixed visible -->
+<!-- Jewish Bible Calendar v6 service worker kill -->
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
@@ -908,7 +909,11 @@ body.drawer-lock {
 }
 
     
-/* v7 Meditation Notes */
+/* v8 Meditation Notes - fixed visible */
+#notes-section.meditation-card {
+  display: block;
+  margin-top: 14px;
+}
 .meditation-card {
   position: relative;
   overflow: hidden;
@@ -918,7 +923,7 @@ body.drawer-lock {
   padding: 8px 10px;
   border-radius: 999px;
   color: #fff;
-  background: var(--olive);
+  background: var(--olive, #71874e);
   font-size: .74rem;
   font-weight: 900;
   white-space: nowrap;
@@ -926,19 +931,19 @@ body.drawer-lock {
 .note-help,
 .local-note {
   margin: 0 0 12px;
-  color: var(--muted);
+  color: var(--muted, #6c7787);
   font-size: .84rem;
   line-height: 1.55;
 }
 .meditation-textarea {
   width: 100%;
-  min-height: 170px;
+  min-height: 175px;
   resize: vertical;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line, rgba(23,35,59,.09));
   border-radius: 22px;
   padding: 15px 16px;
-  background: rgba(255,253,248,.94);
-  color: var(--ink);
+  background: rgba(255,253,248,.96);
+  color: var(--ink, #17233b);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.78);
   line-height: 1.6;
   font-size: .94rem;
@@ -958,11 +963,11 @@ body.drawer-lock {
 }
 .ghost-button {
   appearance: none;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line, rgba(23,35,59,.09));
   cursor: pointer;
   border-radius: 16px;
-  color: var(--muted);
-  background: rgba(255,255,255,.55);
+  color: var(--muted, #6c7787);
+  background: rgba(255,255,255,.65);
   font-weight: 900;
 }
 .local-note {
@@ -1128,23 +1133,27 @@ body.drawer-lock {
           </div>
         </section>
 
-
+        
         <section id="notes-section" class="panel meditation-card">
           <div class="section-head row">
             <div>
-              <p class="small-eyebrow" data-i18n="meditationNote">묵상 노트</p>
-              <h2 data-i18n="meditationNoteTitle">오늘의 묵상 메모</h2>
+              <p class="small-eyebrow">묵상 노트</p>
+              <h2>오늘의 묵상 메모</h2>
             </div>
-            <span id="noteDateBadge" class="note-date-badge">-</span>
+            <span id="noteDateBadge" class="note-date-badge">오늘</span>
           </div>
-          <p class="note-help" data-i18n="meditationPrompt">오늘 말씀 앞에서 받은 마음, 질문, 기도, 적용할 한 가지를 적어보세요.</p>
-          <textarea id="meditationNoteInput" class="meditation-textarea" rows="8" data-i18n-placeholder="notePlaceholder" placeholder="오늘의 말씀을 읽으며 받은 마음을 자유롭게 기록하세요."></textarea>
+          <p id="noteHelp" class="note-help">오늘 말씀 앞에서 받은 마음, 질문, 기도, 적용할 한 가지를 적어보세요.</p>
+          <textarea id="meditationNoteInput" class="meditation-textarea" rows="8" placeholder="오늘의 말씀을 읽으며 받은 마음을 자유롭게 기록하세요.
+
+예) 오늘 붙잡은 말씀
+예) 주님께 드리는 기도
+예) 오늘 순종할 한 가지"></textarea>
           <div class="note-actions">
-            <button id="saveNoteButton" class="primary-button note-button" type="button" data-i18n="saveNote">저장</button>
-            <button id="copyNoteButton" class="secondary-button note-button" type="button" data-i18n="copyNote">복사</button>
-            <button id="deleteNoteButton" class="ghost-button note-button" type="button" data-i18n="deleteNote">삭제</button>
+            <button id="saveNoteButton" class="primary-button note-button" type="button">저장</button>
+            <button id="copyNoteButton" class="secondary-button note-button" type="button">복사</button>
+            <button id="deleteNoteButton" class="ghost-button note-button" type="button">삭제</button>
           </div>
-          <p class="local-note" data-i18n="noteStoredLocal">이 메모는 이 기기의 브라우저 안에만 저장됩니다.</p>
+          <p id="localNoteInfo" class="local-note">이 메모는 이 기기의 브라우저 안에만 저장됩니다.</p>
         </section>
 
         <section id="about" class="panel info-card">
@@ -1223,7 +1232,6 @@ body.drawer-lock {
         <nav class="drawer-menu">
           <a id="drawerLinkHome" href="#home" data-drawer-link>오늘의 본문</a>
           <a id="drawerLinkCalendar" href="#calendar-section" data-drawer-link>말씀 달력</a>
-          <a id="drawerLinkNotes" href="#notes-section" data-drawer-link data-i18n="meditationNote">묵상 노트</a>
           <a id="drawerLinkAbout" href="#about" data-drawer-link>앱 설명</a>
           <a id="drawerLinkUsage" href="#usage" data-drawer-link>사용 방법</a>
           <a id="drawerLinkTerms" href="#terms" data-drawer-link>용어 설명</a>
@@ -1256,7 +1264,8 @@ body.drawer-lock {
       <nav class="bottom-tabs" aria-label="하단 메뉴">
         <a href="#home" class="bottom-tab is-active"><span>⌂</span><small data-i18n="menuToday">오늘</small></a>
         <a href="#calendar-section" class="bottom-tab"><span>▦</span><small id="bottomTabCalendarLabel">달력 보기</small></a>
-        <a href="#about" class="bottom-tab"><span>ℹ</span><small data-i18n="menuAbout">앱 설명</small></a>
+                <a href="#notes-section" class="bottom-tab"><span>✍</span><small>묵상</small></a>
+<a href="#about" class="bottom-tab"><span>ℹ</span><small data-i18n="menuAbout">앱 설명</small></a>
         <a href="#terms" class="bottom-tab"><span>✦</span><small data-i18n="menuTerms">용어</small></a>
         <a href="#copyright" class="bottom-tab"><span>⚙</span><small data-i18n="menuCopyright">저작권</small></a>
       </nav>
@@ -2637,82 +2646,100 @@ loadToday();
 
 <script>
 (function () {
-  const NOTE_VERSION = 'jbc-meditation-notes-v1';
   const noteInput = document.getElementById('meditationNoteInput');
+  if (!noteInput) {
+    console.warn('Meditation note section was not found.');
+    return;
+  }
+
   const saveButton = document.getElementById('saveNoteButton');
   const copyButton = document.getElementById('copyNoteButton');
   const deleteButton = document.getElementById('deleteNoteButton');
   const noteDateBadge = document.getElementById('noteDateBadge');
-
-  if (!noteInput) return;
+  const noteHelp = document.getElementById('noteHelp');
+  const localNoteInfo = document.getElementById('localNoteInfo');
 
   function currentLang() {
     return (document.documentElement.getAttribute('lang') || 'ko').toLowerCase().startsWith('en') ? 'en' : 'ko';
   }
 
-  function todayKey() {
+  function dateKey() {
     const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
   function storageKey() {
-    return `${NOTE_VERSION}:${todayKey()}`;
+    return 'jbc-meditation-note:' + dateKey();
   }
 
-  const noteText = {
+  const text = {
     ko: {
+      dateLocale: 'ko-KR',
+      help: '오늘 말씀 앞에서 받은 마음, 질문, 기도, 적용할 한 가지를 적어보세요.',
+      local: '이 메모는 이 기기의 브라우저 안에만 저장됩니다.',
       placeholder: '오늘의 말씀을 읽으며 받은 마음을 자유롭게 기록하세요.\n\n예) 오늘 붙잡은 말씀\n예) 주님께 드리는 기도\n예) 오늘 순종할 한 가지',
+      save: '저장',
+      copy: '복사',
+      del: '삭제',
       saved: '묵상 메모가 저장되었습니다.',
-      deleted: '묵상 메모가 삭제되었습니다.',
       copied: '묵상 메모가 복사되었습니다.',
+      deleted: '묵상 메모가 삭제되었습니다.',
       empty: '복사할 메모가 없습니다.'
     },
     en: {
+      dateLocale: 'en-US',
+      help: 'Write what you received from today’s reading: a question, prayer, or one step of obedience.',
+      local: 'This note is stored only in this browser on this device.',
       placeholder: 'Write your reflection from today’s reading.\n\nExample: Word I am holding today\nExample: Prayer before the Lord\nExample: One thing to obey today',
+      save: 'Save',
+      copy: 'Copy',
+      del: 'Delete',
       saved: 'Meditation note saved.',
-      deleted: 'Meditation note deleted.',
       copied: 'Meditation note copied.',
+      deleted: 'Meditation note deleted.',
       empty: 'There is no note to copy.'
     }
   };
 
-  function showToastSafe(message) {
-    const toast = document.getElementById('toast');
-    if (toast) {
-      toast.textContent = message;
-      toast.hidden = false;
-      setTimeout(() => { toast.hidden = true; }, 1800);
-      return;
+  function toast(message) {
+    const toastEl = document.getElementById('toast');
+    if (toastEl) {
+      toastEl.textContent = message;
+      toastEl.hidden = false;
+      setTimeout(() => { toastEl.hidden = true; }, 1800);
+    } else {
+      alert(message);
     }
-    alert(message);
   }
 
-  function updateNoteLanguage() {
+  function applyLang() {
     const lang = currentLang();
-    noteInput.placeholder = noteText[lang].placeholder;
+    const pack = text[lang];
+    noteInput.placeholder = pack.placeholder;
+    if (saveButton) saveButton.textContent = pack.save;
+    if (copyButton) copyButton.textContent = pack.copy;
+    if (deleteButton) deleteButton.textContent = pack.del;
+    if (noteHelp) noteHelp.textContent = pack.help;
+    if (localNoteInfo) localNoteInfo.textContent = pack.local;
     if (noteDateBadge) {
-      const d = new Date();
-      noteDateBadge.textContent = d.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', { month: 'short', day: 'numeric' });
+      noteDateBadge.textContent = new Date().toLocaleDateString(pack.dateLocale, { month: 'short', day: 'numeric' });
     }
   }
 
-  function loadNote() {
+  function load() {
     noteInput.value = localStorage.getItem(storageKey()) || '';
-    updateNoteLanguage();
+    applyLang();
   }
 
-  function saveNote() {
+  function save() {
     localStorage.setItem(storageKey(), noteInput.value);
-    showToastSafe(noteText[currentLang()].saved);
+    toast(text[currentLang()].saved);
   }
 
-  async function copyNote() {
+  async function copy() {
     const value = noteInput.value.trim();
     if (!value) {
-      showToastSafe(noteText[currentLang()].empty);
+      toast(text[currentLang()].empty);
       return;
     }
     try {
@@ -2725,34 +2752,22 @@ loadToday();
       document.execCommand('copy');
       temp.remove();
     }
-    showToastSafe(noteText[currentLang()].copied);
+    toast(text[currentLang()].copied);
   }
 
-  function deleteNote() {
+  function removeNote() {
     localStorage.removeItem(storageKey());
     noteInput.value = '';
-    showToastSafe(noteText[currentLang()].deleted);
+    toast(text[currentLang()].deleted);
   }
 
-  saveButton?.addEventListener('click', saveNote);
-  copyButton?.addEventListener('click', copyNote);
-  deleteButton?.addEventListener('click', deleteNote);
+  noteInput.addEventListener('input', () => localStorage.setItem(storageKey(), noteInput.value));
+  if (saveButton) saveButton.addEventListener('click', save);
+  if (copyButton) copyButton.addEventListener('click', copy);
+  if (deleteButton) deleteButton.addEventListener('click', removeNote);
+  document.getElementById('languageToggle')?.addEventListener('click', () => setTimeout(applyLang, 120));
 
-  noteInput.addEventListener('input', function () {
-    localStorage.setItem(storageKey(), noteInput.value);
-  });
-
-  document.getElementById('languageToggle')?.addEventListener('click', function () {
-    setTimeout(updateNoteLanguage, 120);
-  });
-
-  window.addEventListener('hashchange', function () {
-    document.querySelectorAll('.bottom-tab').forEach(function (tab) {
-      tab.classList.toggle('is-active', tab.getAttribute('href') === (location.hash || '#home'));
-    });
-  });
-
-  loadNote();
+  load();
 })();
 </script>
 

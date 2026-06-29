@@ -1,4 +1,4 @@
-const KILL_VERSION = 'jbc-v7-notes-kill-sw-20260628';
+const KILL_VERSION = 'jbc-v8-notes-fixed-20260628';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
