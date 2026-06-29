@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>캐시 정리</title>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f5efe3;color:#17233b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;padding:24px}
+    .box{max-width:420px;background:#fffdf8;border-radius:24px;padding:24px;box-shadow:0 18px 42px rgba(15,32,61,.14)}
+    button{border:0;border-radius:999px;background:#0b2a52;color:#fff;padding:13px 18px;font-weight:900;font-size:1rem}
+    p{line-height:1.6;color:#6c7787}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>예전 화면 캐시 정리</h1>
+    <p>이 버튼을 누르면 예전 service worker와 저장된 캐시를 지우고 최신 앱을 다시 엽니다.</p>
+    <button id="reset">정리 후 앱 열기</button>
+    <p id="msg"></p>
+  </div>
+<script>
+document.getElementById('reset').addEventListener('click', async function () {
+  document.getElementById('msg').textContent = '정리하는 중입니다...';
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+  }
+  if ('caches' in window) {
+    const names = await caches.keys();
+    await Promise.all(names.map(n => caches.delete(n)));
+  }
+  localStorage.clear();
+  sessionStorage.clear();
+  location.href = './index.html?fresh=jbc-manual-reset-' + Date.now();
+});
+</script>
+</body>
+</html>

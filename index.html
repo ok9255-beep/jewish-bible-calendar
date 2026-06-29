@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- Jewish Bible Calendar v6 service worker kill -->
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
@@ -2499,5 +2500,42 @@ loadToday();
 })();
 </script>
 
-  </body>
+  
+<script>
+(function () {
+  var KILL_VERSION = 'jbc-v6-kill-sw-20260628';
+  if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+
+  navigator.serviceWorker.addEventListener('message', function (event) {
+    if (event.data && event.data.type === 'JBC_SW_KILLED') {
+      if (!sessionStorage.getItem(KILL_VERSION)) {
+        sessionStorage.setItem(KILL_VERSION, '1');
+        var url = new URL(location.href);
+        url.searchParams.set('fresh', KILL_VERSION);
+        location.replace(url.toString());
+      }
+    }
+  });
+
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./service-worker.js?kill=' + KILL_VERSION, { scope: './' })
+      .then(function (registration) {
+        return registration.update().then(function () { return registration; });
+      })
+      .then(function () {
+        if (navigator.serviceWorker.controller && !sessionStorage.getItem(KILL_VERSION)) {
+          setTimeout(function () {
+            sessionStorage.setItem(KILL_VERSION, '1');
+            var url = new URL(location.href);
+            url.searchParams.set('fresh', KILL_VERSION);
+            location.replace(url.toString());
+          }, 900);
+        }
+      })
+      .catch(function () {});
+  });
+})();
+</script>
+
+</body>
 </html>
